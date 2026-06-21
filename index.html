@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ブロックけし　１０つくりす</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg-top:#FFE8C2; --bg-bottom:#FFF6E8; --ink:#4A4E69; --coral:#FF7A59; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; height:100%; overflow:hidden; }
+  body{
+    height:100vh;
+    background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 65%);
+    font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+    color:var(--ink); display:flex; align-items:center; justify-content:center;
+    user-select:none; -webkit-user-select:none; overscroll-behavior:none;
+  }
+  #app{ width:100%; max-width:440px; height:100vh; display:flex; flex-direction:column; }
+  .screen{ display:flex; flex-direction:column; align-items:center; flex:1; }
+  .screen[hidden]{ display:none; }
+
+  /* ===== スタート画面 ===== */
+  #startScreen{ justify-content:flex-start; gap:8px; padding:10px 14px 8px; overflow-y:auto; }
+  .logo{ font-family:'Mochiy Pop One',cursive; font-size:1.1rem; margin:0; text-shadow:2px 3px 0 rgba(0,0,0,0.08); text-align:center; line-height:1.4; }
+  .logo .accent{ font-size:2.2rem; display:block; }
+  .logo .accent{ color:var(--coral); }
+  .tagline{ display:none; }
+  .acStage{ display:none; }
+
+  /* メイン（10つくりす）エリア */
+  .featuredCards{ display:grid; grid-template-columns:1fr 1fr; gap:7px; width:100%; flex-shrink:0; }
+  .allCard.featured{ border-radius:18px; padding:14px 10px; box-shadow:0 6px 0 rgba(0,0,0,0.15); }
+  .allCard.featured .acGoal{ font-size:1.3rem; }
+
+  /* かわりだねラベル */
+  .kawariLabel{
+    width:100%; text-align:center; flex-shrink:0;
+    font-size:0.75rem; font-weight:700; color:#9c8a72;
+    display:flex; align-items:center; gap:8px;
+  }
+  .kawariLabel::before,.kawariLabel::after{
+    content:''; flex:1; height:1px; background:#d0c4a8;
+  }
+
+  /* 8枚カードグリッド */
+  .allCards{ display:grid; grid-template-columns:1fr 1fr; gap:7px; width:100%; flex-shrink:0; }
+  .allCard{
+    border:none; border-radius:14px; padding:10px 8px;
+    background:var(--ac); color:var(--ink);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-family:inherit; cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,0.12);
+    transition:transform .12s, box-shadow .12s;
+  }
+  .allCard:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.12); }
+  .acStage{ font-size:0.6rem; font-weight:700; opacity:0.65; letter-spacing:0.05em; }
+  .acGoal{ font-family:'Mochiy Pop One',cursive; font-size:1.05rem; }
+  .acMode{ font-size:0.8rem; font-weight:700; }
+  .acBest{ font-size:0.6rem; background:rgba(0,0,0,0.1); border-radius:6px; padding:1px 7px; margin-top:1px; }
+
+  .rulesBtns{ display:flex; gap:8px; width:100%; flex-shrink:0; }
+  .rulesBtn{ flex:1; }
+  .vizRulesBtnStyle{ background:rgba(255,220,120,0.55); }
+
+  /* ===== 詳細解説カード ===== */
+  .techCard{ background:rgba(255,255,255,0.75); }
+  .techTitle{ font-size:0.88rem; font-weight:700; color:#4A4E69; margin-bottom:6px; }
+  .techText{ font-size:0.76rem; color:#5a5060; margin:0 0 6px; line-height:1.5; }
+  .techTable{ width:100%; border-collapse:collapse; font-size:0.73rem; margin-bottom:10px; }
+  .techTable th{ background:#f0ece4; color:#9c8a72; font-weight:700; padding:4px 6px; text-align:center; border-bottom:1px solid #ddd; }
+  .techTable td{ padding:4px 6px; text-align:center; border-bottom:1px solid #f0ece4; color:#4A4E69; }
+  .techTable tr.hl td{ background:rgba(255,200,100,0.15); font-weight:700; }
+  .techTable tr.fire td{ color:#FF2040; }
+  .techFormula{ background:rgba(255,240,220,0.6); border-radius:10px; padding:8px 10px; margin-bottom:8px; display:flex; flex-direction:column; gap:5px; }
+  .tfRow{ display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; }
+  .tfLabel{ color:#6a5e50; font-weight:700; }
+  .tfEq{ color:#4A4E69; }
+  .tfMult{ font-weight:700; color:#FF7A59; }
+  .tfChain{ display:flex; gap:5px; flex-wrap:wrap; }
+  .cBadge{ font-size:0.68rem; border-radius:6px; padding:2px 8px; font-weight:700; }
+  .c1{ background:#0083b0; color:#fff; }
+  .c3{ background:#f7971e; color:#3a2000; }
+  .c4{ background:#FF2040; color:#fff; }
+  .techEg{ background:rgba(100,200,120,0.15); border-radius:10px; padding:8px 10px; border-left:3px solid #69DB7C; }
+  .techEgTitle{ font-size:0.72rem; color:#6a5e50; margin-bottom:3px; }
+  .techEgCalc{ font-size:0.9rem; color:#4A4E69; font-weight:700; }
+  .techEgCalc strong{ color:#FF7A59; font-size:1.05rem; }
+
+  /* ===== 絵のルール画面 ===== */
+  #vizRulesScreen{ justify-content:flex-start; padding:0; overflow:hidden; }
+  .vizWrap{
+    width:100%; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 14px 20px; display:flex; flex-direction:column; gap:12px;
+  }
+  .vizCard{
+    position:relative;
+    background:rgba(255,255,255,0.72); border-radius:18px;
+    border:2px solid rgba(255,255,255,0.9);
+    padding:10px 12px 8px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.07);
+  }
+  .vizBadge{
+    position:absolute; top:-10px; right:10px;
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:900; color:#fff;
+    box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  .vizBadge.ok{ background:#4CAF50; }
+  .vizBadge.ng{ background:#F44336; }
+
+  /* ===== ルールボタン（スタート画面） ===== */
+  .rulesBtn{
+    border:2px solid rgba(255,255,255,0.8); border-radius:14px;
+    padding:9px 22px; background:rgba(255,255,255,0.55);
+    color:var(--ink); font-family:inherit; font-size:0.88rem; font-weight:700;
+    cursor:pointer; flex-shrink:0;
+    box-shadow:0 3px 0 rgba(0,0,0,0.08);
+  }
+  .rulesBtn:active{ transform:translateY(2px); box-shadow:none; }
+
+  #rulesScreen{ justify-content:flex-start; padding:0; overflow:hidden; }
+  .rulesWrap{
+    width:100%; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:14px 16px 20px; display:flex; flex-direction:column; gap:10px;
+  }
+  .rulesTitle{
+    font-family:'Mochiy Pop One',cursive; font-size:1.3rem;
+    margin:0; text-align:center; color:var(--ink);
+  }
+  .ruleCard{
+    background:rgba(255,255,255,0.65); border-radius:16px;
+    padding:12px 14px; border:1.5px solid rgba(255,255,255,0.9);
+    display:flex; flex-direction:column; gap:7px;
+  }
+  .ruleHead{
+    font-family:'Mochiy Pop One',cursive; font-size:0.9rem; color:var(--coral);
+  }
+  .ruleList{
+    margin:0; padding-left:1.2em; font-size:0.82rem; line-height:1.7;
+    display:flex; flex-direction:column; gap:1px;
+  }
+  .ruleList strong{ color:var(--coral); }
+  .ruleKeys{
+    display:grid; grid-template-columns:auto 1fr;
+    gap:4px 10px; font-size:0.8rem; align-items:center;
+  }
+  .rk{
+    background:#fff; border:1.5px solid #d0c8b8; border-radius:7px;
+    padding:2px 8px; font-weight:700; font-size:0.75rem;
+    text-align:center; white-space:nowrap; color:var(--ink);
+    box-shadow:0 2px 0 #d0c8b8;
+  }
+  .rkDesc{ color:#6a6080; font-size:0.78rem; }
+  .rulesBackBtn{
+    border:2px solid #E9DEC8; border-radius:13px; padding:12px;
+    background:#fff; color:var(--ink); font-weight:900; font-size:0.95rem;
+    font-family:'Zen Maru Gothic',sans-serif; cursor:pointer;
+    box-shadow:0 3px 0 #E9DEC8; flex-shrink:0;
+  }
+  .rulesBackBtn:active{ transform:translateY(2px); box-shadow:0 1px 0 #E9DEC8; }
+
+  #bugLink{
+    display:inline-block; flex-shrink:0; margin-top:2px;
+    font-size:0.72rem; font-weight:700; color:#9c8a72;
+    text-decoration:none; background:rgba(255,255,255,0.5);
+    border-radius:10px; padding:5px 12px; border:1px solid #e0d4bc;
+  }
+
+  /* ===== ゲーム画面 ===== */
+  #gameScreen{ justify-content:flex-start; padding:6px 12px 8px; gap:5px; }
+  /* HUD オーバーレイ（半透明） */
+  .hud{
+    position:absolute; top:4px; left:4px; right:4px; z-index:8;
+    display:flex; justify-content:space-between; align-items:center; gap:4px;
+    background:rgba(255,242,224,0.82); backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    border-radius:10px; padding:4px 8px;
+    pointer-events:none;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  .hudLabel{ font-size:0.6rem; font-weight:700; color:#9c8a72; display:block; text-align:center; margin-bottom:1px; }
+  .hudCol{ display:flex; flex-direction:column; align-items:center; gap:1px; }
+
+  /* コントロール 1行（回転ボタン半幅） */
+  .controls{ display:grid; grid-template-columns:0.5fr 1fr 1fr 1fr 0.5fr; gap:6px; width:100%; flex-shrink:0; }
+  .ctrlBtn.rot-btn{ font-size:1.1rem; }
+
+  /* すうじモード: 3列1行 */
+  .controls.no-rot{ grid-template-columns:repeat(3,1fr); }
+  .controls.no-rot .rot-btn{ display:none; }
+  .controls.no-rot #leftBtn{ order:1; }
+  .controls.no-rot #dropBtn{ order:2; }
+  .controls.no-rot #rightBtn{ order:3; }
+  .targetBadge{
+    font-family:'Mochiy Pop One',cursive; font-size:1.2rem; color:#fff; line-height:1.1;
+    background:var(--coral); border-radius:12px; padding:4px 10px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.15); white-space:nowrap;
+  }
+  .speedNumHud{
+    font-family:'Mochiy Pop One',cursive; font-size:1.3rem; color:var(--coral);
+    background:rgba(255,255,255,0.7); border-radius:9px; padding:2px 10px;
+    min-width:32px; text-align:center;
+  }
+  .nextBadge{
+    font-family:'Mochiy Pop One',cursive; font-size:1.6rem; color:#fff; line-height:1;
+    border:3px solid #fff; border-radius:12px; padding:4px 14px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.1); min-width:44px; text-align:center;
+  }
+  .scoreBadge{
+    font-family:'Mochiy Pop One',cursive; font-size:1rem; color:var(--ink);
+    background:rgba(255,255,255,0.7); border-radius:9px; padding:2px 9px;
+  }
+  .speedNum{ font-family:'Mochiy Pop One',cursive; font-size:0.78rem; color:var(--coral); min-width:16px; text-align:right; flex-shrink:0; }
+  .speedLabel{ font-size:0.64rem; font-weight:700; color:#9c8a72; white-space:nowrap; }
+  .speedBar{ flex:1; height:6px; background:rgba(0,0,0,0.08); border-radius:99px; overflow:hidden; }
+  .speedFill{ height:100%; border-radius:99px; background:linear-gradient(90deg,#69DB7C,#FFD43B,#FF6B6B); transition:width .5s ease; }
+
+  /* ===== 限界ライン・デンジャーゾーン ===== */
+  .limit-line{ display:none; }
+  .danger-zone{ display:none; }
+    position:absolute; left:0; right:0; height:3px;
+    z-index:10; pointer-events:none;
+    background:repeating-linear-gradient(90deg,
+      rgba(255,80,80,0.55) 0,rgba(255,80,80,0.55) 8px,
+      transparent 8px,transparent 14px);
+    transition:background .3s;
+  }
+  .limit-line.danger{
+    background:repeating-linear-gradient(90deg,
+      #FF2020 0,#FF2020 8px,transparent 8px,transparent 14px);
+    animation:limitPulse .45s ease-in-out infinite;
+    box-shadow:0 0 8px rgba(255,0,0,0.55);
+  }
+  .limit-label{
+    position:absolute; right:5px; top:-18px;
+    font-size:0.58rem; font-weight:700;
+    color:rgba(220,60,60,0.85); white-space:nowrap;
+    font-family:'Zen Maru Gothic',sans-serif; letter-spacing:0.03em;
+  }
+  .limit-line.danger .limit-label{ color:#FF2020; animation:limitPulse .45s ease-in-out infinite; }
+
+  .danger-zone{
+    position:absolute; left:0; right:0; top:0;
+    pointer-events:none; z-index:0;
+    background:rgba(255,60,60,0); transition:background .4s;
+  }
+  .danger-zone.active{ animation:dangerZonePulse .7s ease-in-out infinite; }
+
+  .field.field-danger{ animation:fieldBorder .55s ease-in-out infinite; }
+
+  @keyframes limitPulse{ 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  @keyframes dangerZonePulse{
+    0%,100%{ background:rgba(255,50,50,0.14); }
+    50%{ background:rgba(255,50,50,0.04); }
+  }
+  @keyframes fieldBorder{
+    0%,100%{ box-shadow:0 0 0 3px rgba(255,40,40,0.55),inset 0 0 18px rgba(255,40,40,0.08); }
+    50%{ box-shadow:0 0 0 2px rgba(255,40,40,0.15),inset 0 0 4px rgba(255,40,40,0.02); }
+  }
+
+  /* ===== フィールド ===== */
+  .fieldWrap{ position:relative; flex:1; overflow:hidden; width:100%; }
+  .field{
+    position:relative; border-radius:8px;
+    margin:0 auto; display:block;
+    background:#ffffff;
+    background-image:linear-gradient(rgba(0,0,0,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.07) 1px,transparent 1px);
+    background-size:var(--cs) var(--cs);
+    box-shadow:0 0 0 3px #e8d8c0, 0 4px 16px rgba(0,0,0,0.12);
+  }
+
+  /* ===== ブロックセル（平面スタイル） ===== */
+  .tc{
+    position:absolute;
+    border-radius:1px;
+    border:1.5px solid rgba(0,0,0,0.28);
+    z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Mochiy Pop One',cursive; color:#fff;
+    overflow:hidden;
+  }
+  /* すうじモード: 大きいセルにスタッド */
+  .tc.num-cell{ overflow:visible; border-radius:6px; }
+  .tc.num-cell::before{
+    content:''; position:absolute;
+    top:-10px; left:50%; transform:translateX(-50%);
+    width:48%; height:13px; border-radius:5px 5px 0 0;
+    background:var(--sc2, rgba(255,255,255,0.4));
+    box-shadow:inset 0 3px 0 rgba(255,255,255,0.5);
+    z-index:5;
+  }
+  .tc.settling{ transition: top 0.18s ease-in; }
+  .tc.fall{ z-index:3; }
+  .tc.land{ animation:squish .22s ease; }
+  .tc.pop{ animation:tpop .34s ease forwards; z-index:4; }
+
+  /* エフェクト */
+  .floater{
+    position:absolute; z-index:6; pointer-events:none;
+    font-family:'Mochiy Pop One',cursive; white-space:nowrap;
+    animation:floatUp .75s ease forwards; transform:translateX(-50%);
+  }
+  .floater.cel{ font-size:0.9rem; color:#a8650a; text-shadow:0 1px 0 #fff; }
+  .floater.sco{ font-size:1rem; color:var(--coral); text-shadow:0 1px 0 #fff; }
+  .floater.chain-bonus{
+    font-size:1.1rem; color:#fff;
+    background:linear-gradient(135deg,#00b4db,#0083b0);
+    border-radius:10px; padding:3px 10px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.2);
+  }
+  .floater.big-bonus{
+    font-size:1.1rem; color:#fff;
+    background:linear-gradient(135deg,#FF8C00,#FFD700);
+    border-radius:10px; padding:3px 10px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.2);
+  }
+    font-size:1.15rem; color:#fff;
+    background:linear-gradient(135deg,#FF6B6B,#FFD43B);
+    border-radius:10px; padding:2px 10px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.2);
+  }
+  #comboBanner{
+    position:absolute; top:4px; left:50%; transform:translateX(-50%);
+    font-family:'Mochiy Pop One',cursive; font-size:0.95rem; color:#fff;
+    background:linear-gradient(135deg,#FF6B6B,#FFD43B);
+    border-radius:10px; padding:3px 12px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.15);
+    pointer-events:none; z-index:7; opacity:0; transition:opacity .2s;
+  }
+  #comboBanner.show{ opacity:1; }
+
+  @keyframes tpop{ 0%{transform:scale(1);opacity:1;} 55%{transform:scale(1.4);opacity:1;} 100%{transform:scale(0.1);opacity:0;} }
+  @keyframes squish{ 0%{transform:scaleY(1);} 35%{transform:scaleY(0.65) scaleX(1.2);} 100%{transform:scaleY(1);} }
+  @keyframes floatUp{ from{opacity:0;transform:translateX(-50%) translateY(0) scale(0.8);} 20%{opacity:1;transform:translateX(-50%) translateY(-14px) scale(1.1);} to{opacity:0;transform:translateX(-50%) translateY(-58px) scale(1);} }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+  .shaking{ animation:shake .22s ease; }
+
+  /* ===== コントロール ===== */
+  .ctrl-gap{ /* 不使用 */ }
+  .ctrlBtn{ border:none; border-radius:12px; height:50px; font-size:1.4rem; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:inherit; width:100%; }
+  .ctrlBtn.move{ background:linear-gradient(180deg,#fff,#FFE9D6); box-shadow:0 4px 0 #E8C9A8; color:var(--coral); }
+  .ctrlBtn.move:active{ transform:translateY(3px); box-shadow:0 1px 0 #E8C9A8; }
+  .ctrlBtn.rot-btn{ background:linear-gradient(180deg,#fff,#E8F0FF); box-shadow:0 4px 0 #B8C8F0; color:#5577DD; font-size:1.25rem; }
+  .ctrlBtn.rot-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #B8C8F0; }
+  .ctrlBtn.flip-btn{ background:linear-gradient(180deg,#fff,#E8FFE8); box-shadow:0 4px 0 #A8D8A8; color:#2aaa2a; font-size:1.25rem; }
+  .ctrlBtn.flip-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #A8D8A8; }
+  .ctrlBtn.down{ background:linear-gradient(180deg,#fffae6,#FFE564); box-shadow:0 4px 0 #D4B800; color:#7a5e00; }
+  .ctrlBtn.down:active{ transform:translateY(3px); box-shadow:0 1px 0 #D4B800; }
+
+  .keyguide{
+    width:100%; text-align:center; flex-shrink:0;
+    font-size:0.62rem; font-weight:700; color:#9c8a72;
+    letter-spacing:0.02em; line-height:1;
+    padding:3px 0 0;
+  }
+  .keyguide .kg-sep{ margin:0 3px; opacity:0.4; }
+  .keyguide .kg-rot{ /* 回転キーは別色 */ color:#5577DD; }
+  #keyguide.no-rot .kg-rot{ display:none; }
+
+  /* ===== 連鎖アナウンス ===== */
+  .chain-ann{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(0);
+    font-family:'Mochiy Pop One',cursive; color:#fff;
+    border-radius:18px; padding:12px 22px;
+    z-index:20; white-space:nowrap; pointer-events:none;
+    animation:chainPop 1.3s ease forwards;
+    text-shadow:0 2px 4px rgba(0,0,0,0.3);
+  }
+  .chain-ann.c1{ background:linear-gradient(135deg,#0083b0,#00b4db); font-size:1.4rem; box-shadow:0 0 18px rgba(0,180,219,0.7); }
+  .chain-ann.c2{ background:linear-gradient(135deg,#c471ed,#f64f59); font-size:1.8rem; box-shadow:0 0 24px rgba(196,113,237,0.8); }
+  .chain-ann.c3{ background:linear-gradient(135deg,#f7971e,#ffd200); font-size:2.1rem; color:#3a2000; box-shadow:0 0 30px rgba(255,210,0,0.9); }
+  .chain-ann.c4{ background:linear-gradient(135deg,#ff0844,#ffb199); font-size:2.4rem; box-shadow:0 0 36px rgba(255,8,68,0.9); animation:chainPop4 1.3s ease forwards; }
+  @keyframes chainPop{
+    0%{ transform:translate(-50%,-50%) scale(0.1) rotate(-15deg); opacity:0; }
+    25%{ transform:translate(-50%,-50%) scale(1.25) rotate(4deg); opacity:1; }
+    40%{ transform:translate(-50%,-50%) scale(1) rotate(-1deg); opacity:1; }
+    75%{ transform:translate(-50%,-50%) scale(1.05); opacity:1; }
+    100%{ transform:translate(-50%,-50%) scale(0.7); opacity:0; }
+  }
+  @keyframes chainPop4{
+    0%{ transform:translate(-50%,-50%) scale(0.1) rotate(-20deg); opacity:0; }
+    20%{ transform:translate(-50%,-50%) scale(1.4) rotate(6deg); opacity:1; }
+    35%{ transform:translate(-50%,-50%) scale(1) rotate(-2deg); }
+    70%{ transform:translate(-50%,-50%) scale(1.1); opacity:1; }
+    100%{ transform:translate(-50%,-50%) scale(0.6); opacity:0; }
+  }
+
+  /* ===== 残念オーバーレイ ===== */
+  .zannenOverlay{
+    position:absolute; inset:0; z-index:30;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.45); border-radius:inherit;
+    animation:zannenFadeIn 0.3s ease forwards;
+  }
+  @keyframes zannenFadeIn{ from{opacity:0;} to{opacity:1;} }
+  .zannenText{
+    font-family:'Mochiy Pop One',cursive; font-size:2.6rem; color:#fff;
+    text-shadow:0 4px 12px rgba(0,0,0,0.6);
+    animation:zannenPop 0.4s cubic-bezier(.36,2,.5,1) forwards;
+  }
+  @keyframes zannenPop{
+    0%{ transform:scale(0.3) rotate(-8deg); opacity:0; }
+    60%{ transform:scale(1.15) rotate(3deg); opacity:1; }
+    100%{ transform:scale(1) rotate(0); opacity:1; }
+  }
+
+  /* ===== コンフェッティ ===== */
+  @keyframes confettiFall{
+    0%{ transform:translateY(0) rotate(0deg) scale(1); opacity:1; }
+    100%{ transform:translateY(110vh) rotate(600deg) scale(0.5); opacity:0.4; }
+  }
+  /* ===== 新記録バナー（派手版） ===== */
+  .newBest{
+    text-align:center; font-family:'Mochiy Pop One',cursive;
+    font-size:1.1rem; color:#fff;
+    background:linear-gradient(135deg,#FFD43B,#FF6B6B);
+    border-radius:10px; padding:8px 0;
+    animation:newBestPop .5s cubic-bezier(.36,2,.5,1) both;
+  }
+  @keyframes newBestPop{
+    0%{ transform:scale(0.2) rotate(-12deg); opacity:0; }
+    70%{ transform:scale(1.18) rotate(4deg); }
+    100%{ transform:scale(1) rotate(0); opacity:1; }
+  }
+  .newBest.pulse{ animation:newBestPop .5s cubic-bezier(.36,2,.5,1) both, newBestShine .55s .6s ease-in-out 4; }
+  @keyframes newBestShine{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,200,0,0); transform:scale(1); }
+    50%{ box-shadow:0 0 18px 6px rgba(255,200,0,0.7); transform:scale(1.06); }
+  }
+  /* ===== はじめてバナー ===== */
+  .firstTimeBanner{
+    text-align:center; font-family:'Mochiy Pop One',cursive;
+    font-size:1.15rem; color:#fff;
+    background:linear-gradient(135deg,#FF6B6B,#FFD43B,#69DB7C,#4DABF7,#DA77F2);
+    background-size:300% 300%;
+    border-radius:12px; padding:10px 0;
+    animation:firstTimePop .6s cubic-bezier(.36,2,.5,1) both,
+              rainbowBG 1.5s .7s linear infinite,
+              firstTimePulse .6s 1s ease-in-out 4;
+  }
+  @keyframes firstTimePop{
+    0%{ transform:scale(0.1) rotate(-20deg); opacity:0; }
+    70%{ transform:scale(1.22) rotate(6deg); opacity:1; }
+    100%{ transform:scale(1) rotate(0); }
+  }
+  @keyframes rainbowBG{
+    0%{ background-position:0% 50%; }
+    100%{ background-position:300% 50%; }
+  }
+  @keyframes firstTimePulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.07); box-shadow:0 0 20px 8px rgba(255,220,0,0.6); }
+  }
+
+  /* ===== ゲームオーバー ===== */
+  #overScreen{ justify-content:flex-start; padding:0; overflow-y:auto; }
+  .overContent{
+    width:100%; padding:14px 16px 20px;
+    display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .overStageInfo{
+    font-size:0.78rem; font-weight:700; color:#9c8a72;
+    background:rgba(255,255,255,0.55); border-radius:10px; padding:5px 16px;
+    border:1px solid rgba(255,255,255,0.8);
+  }
+  /* スコア大バナー */
+  .overScoreArea{
+    width:100%; background:linear-gradient(135deg,#FF7A59 0%,#FFAB59 100%);
+    border-radius:20px; padding:14px 16px 16px; text-align:center;
+    box-shadow:0 6px 0 rgba(200,80,40,0.28);
+    display:flex; flex-direction:column; gap:6px; align-items:center;
+  }
+  .overScoreLabel{ font-size:0.75rem; font-weight:700; color:rgba(255,255,255,0.88); letter-spacing:0.08em; }
+  .overScoreNum{
+    font-family:'Mochiy Pop One',cursive; font-size:2.8rem; color:#fff; line-height:1.1;
+    text-shadow:0 3px 0 rgba(0,0,0,0.15);
+  }
+  /* スタットカード3枚 */
+  .overStatsGrid{ width:100%; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .overStatCard{
+    background:rgba(255,255,255,0.72); border-radius:16px; padding:12px 6px 10px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    border:1.5px solid rgba(255,255,255,0.9);
+    box-shadow:0 3px 6px rgba(0,0,0,0.06);
+  }
+  .osIcon{ font-size:1.5rem; line-height:1; }
+  .osVal{ font-family:'Mochiy Pop One',cursive; font-size:1.1rem; color:var(--ink); line-height:1.2; text-align:center; }
+  .osVal.best{ color:var(--coral); }
+  .osLabel{ font-size:0.6rem; font-weight:700; color:#9c8a72; text-align:center; line-height:1.3; }
+  .scoreBreakdown{
+    width:100%; background:rgba(255,255,255,0.72); border-radius:16px;
+    padding:10px 14px; border:1.5px solid rgba(255,255,255,0.9);
+    box-shadow:0 3px 6px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:6px;
+  }
+  .sbTitle{ font-size:0.7rem; font-weight:700; color:#9c8a72; margin-bottom:2px; }
+  .sbRow{ display:flex; justify-content:space-between; align-items:center; }
+  .sbLabel{ font-size:0.78rem; font-weight:700; color:#6a5e50; }
+  .sbVal{ font-family:'Mochiy Pop One',cursive; font-size:0.95rem; color:var(--ink); }
+  .sbValChain{ color:#0083b0; }
+  .sbValCombo{ color:#cc5520; }
+  .chainCountsCard{
+    width:100%; background:rgba(255,255,255,0.72); border-radius:16px;
+    padding:10px 14px; border:1.5px solid rgba(255,255,255,0.9);
+    box-shadow:0 3px 6px rgba(0,0,0,0.06);
+  }
+  .chainCountsTitle{ font-size:0.72rem; font-weight:700; color:#9c8a72; margin-bottom:7px; }
+  .chainCountsList{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chainCountItem{
+    background:linear-gradient(135deg,#0083b0,#00b4db); color:#fff;
+    border-radius:9px; padding:4px 12px;
+    font-family:'Mochiy Pop One',cursive; font-size:0.82rem;
+  }
+  .chainCountItem.big{ background:linear-gradient(135deg,#f7971e,#ffd200); color:#3a2000; }
+  .chainCountItem.huge{ background:linear-gradient(135deg,#ff0844,#ffb199); }
+  .primaryBtn,.secondaryBtn{ border:none; border-radius:13px; padding:12px; font-size:0.95rem; font-weight:900; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; }
+  .primaryBtn{ background:var(--coral); color:#fff; box-shadow:0 5px 0 #D9603F; }
+  .primaryBtn:active{ transform:translateY(4px); box-shadow:0 1px 0 #D9603F; }
+  .secondaryBtn{ background:#fff; color:var(--ink); border:2px solid #E9DEC8; box-shadow:0 3px 0 #E9DEC8; }
+  .secondaryBtn:active{ transform:translateY(2px); box-shadow:0 1px 0 #E9DEC8; }
+  @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.001ms !important; transition-duration:.001ms !important; } }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== スタート ===== -->
+  <section id="startScreen" class="screen">
+    <h1 class="logo">ブロックけし<br><span class="accent">１０つくりす</span></h1>
+    <p class="tagline">ステージとレベルを えらんでね！</p>
+    <!-- ★ メイン: 10つくりす -->
+    <div class="featuredCards">
+      <button class="allCard featured" data-stage="3" data-mode="block" style="--ac:#6DC8F5;">
+        <span class="acStage">ステージ 3</span>
+        <span class="acGoal">10つくりす</span>
+        <span class="acMode"><svg width="18" height="27" viewBox="0 0 18 27" style="display:inline-block;vertical-align:middle;margin-right:3px"><rect x="0" y="0"  width="8" height="8" rx="1.5" fill="#FF6B6B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="9"  width="8" height="8" rx="1.5" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="18" width="8" height="8" rx="1.5" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="9" y="18" width="8" height="8" rx="1.5" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1"/></svg> ブロック</span>
+        <span class="acBest" id="ac3b">ベスト:―</span>
+      </button>
+      <button class="allCard featured" data-stage="3" data-mode="suuji" style="--ac:#A8E0FF;">
+        <span class="acStage">ステージ 3</span>
+        <span class="acGoal">10つくりす</span>
+        <span class="acMode">🔢 すうじ</span>
+        <span class="acBest" id="ac3s">ベスト:―</span>
+      </button>
+    </div>
+
+    <!-- かわりだね -->
+    <div class="kawariLabel">チャレンジ</div>
+    <div class="allCards">
+      <!-- Stage 1 -->
+      <button class="allCard" data-stage="1" data-mode="block" style="--ac:#FFCF6B;">
+        <span class="acStage">ステージ 1</span>
+        <span class="acGoal">8つくりす</span>
+        <span class="acMode"><svg width="18" height="27" viewBox="0 0 18 27" style="display:inline-block;vertical-align:middle;margin-right:3px"><rect x="0" y="0"  width="8" height="8" rx="1.5" fill="#FF6B6B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="9"  width="8" height="8" rx="1.5" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="18" width="8" height="8" rx="1.5" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="9" y="18" width="8" height="8" rx="1.5" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1"/></svg> ブロック</span>
+        <span class="acBest" id="ac1b">ベスト:―</span>
+      </button>
+      <button class="allCard" data-stage="1" data-mode="suuji" style="--ac:#FFE49A;">
+        <span class="acStage">ステージ 1</span>
+        <span class="acGoal">8つくりす</span>
+        <span class="acMode">🔢 すうじ</span>
+        <span class="acBest" id="ac1s">ベスト:―</span>
+      </button>
+      <!-- Stage 2 -->
+      <button class="allCard" data-stage="2" data-mode="block" style="--ac:#7DDEA0;">
+        <span class="acStage">ステージ 2</span>
+        <span class="acGoal">9つくりす</span>
+        <span class="acMode"><svg width="18" height="27" viewBox="0 0 18 27" style="display:inline-block;vertical-align:middle;margin-right:3px"><rect x="0" y="0"  width="8" height="8" rx="1.5" fill="#FF6B6B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="9"  width="8" height="8" rx="1.5" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="18" width="8" height="8" rx="1.5" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="9" y="18" width="8" height="8" rx="1.5" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1"/></svg> ブロック</span>
+        <span class="acBest" id="ac2b">ベスト:―</span>
+      </button>
+      <button class="allCard" data-stage="2" data-mode="suuji" style="--ac:#B0F0C8;">
+        <span class="acStage">ステージ 2</span>
+        <span class="acGoal">9つくりす</span>
+        <span class="acMode">🔢 すうじ</span>
+        <span class="acBest" id="ac2s">ベスト:―</span>
+      </button>
+      <!-- Stage 4 -->
+      <button class="allCard" data-stage="4" data-mode="block" style="--ac:#C090E0;">
+        <span class="acStage">ステージ 4</span>
+        <span class="acGoal">11つくりす</span>
+        <span class="acMode"><svg width="18" height="27" viewBox="0 0 18 27" style="display:inline-block;vertical-align:middle;margin-right:3px"><rect x="0" y="0"  width="8" height="8" rx="1.5" fill="#FF6B6B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="9"  width="8" height="8" rx="1.5" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="0" y="18" width="8" height="8" rx="1.5" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="9" y="18" width="8" height="8" rx="1.5" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1"/></svg> ブロック</span>
+        <span class="acBest" id="ac4b">ベスト:―</span>
+      </button>
+      <button class="allCard" data-stage="4" data-mode="suuji" style="--ac:#DDB8F5;">
+        <span class="acStage">ステージ 4</span>
+        <span class="acGoal">11つくりす</span>
+        <span class="acMode">🔢 すうじ</span>
+        <span class="acBest" id="ac4s">ベスト:―</span>
+      </button>
+    </div>
+    <div class="rulesBtns">
+      <button id="rulesBtn" class="rulesBtn">⭐ とくてん</button>
+      <button id="vizRulesBtn" class="rulesBtn vizRulesBtnStyle">🖼️ ルール</button>
+    </div>
+    <a id="bugLink"
+       href="https://docs.google.com/forms/d/e/1FAIpQLSe9vF4jh8wzg2JikZNjByAIXJ717aW-7nsgse-A59azUOUmEg/viewform?usp=publish-editor"
+       target="_blank" rel="noopener noreferrer">
+      バグをみつけたらおしえてください（ここをタップ）
+    </a>
+  </section>
+
+  <!-- ===== ルール画面 ===== -->
+  <section id="rulesScreen" class="screen" hidden>
+    <div class="rulesWrap">
+      <div class="ruleCard">
+        <div class="ruleHead">⭐ とくてんについて</div>
+        <ul class="ruleList">
+          <li>きえると <strong>10てん × スピード</strong></li>
+          <li>じゅうりょくで かさなって きえると <strong>🔗 れんさボーナス（5ばい）</strong></li>
+          <li>つづけて きえると（<strong>２びょういない</strong>） <strong>コンボボーナス</strong>（2かいいじょう れんぞくから）</li>
+          <li>スピードが あがるほど とくてんも おおきい！<br><small>（きえると 10×スピード×れんぞくすう てん）</small></li>
+        </ul>
+      </div>
+
+      <div class="ruleCard techCard">
+        <div class="techTitle">📊 速度と得点の仕組み</div>
+
+        <p class="techText">スピードレベルは <strong>10秒ごと</strong> に上がり、最大 <strong>Lv15</strong> まであります。落下速度は「秒速」が均等に上がるよう設計されています。</p>
+
+        <!-- 速度グラフ（SVG） -->
+        <svg viewBox="0 0 270 110" width="100%" style="display:block;margin:4px 0 8px;">
+          <!-- グリッド横線 -->
+          <line x1="44" y1="15" x2="256" y2="15" stroke="#eee" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="44" y1="35" x2="256" y2="35" stroke="#eee" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="44" y1="55" x2="256" y2="55" stroke="#eee" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="44" y1="75" x2="256" y2="75" stroke="#eee" stroke-width="1" stroke-dasharray="4,3"/>
+          <!-- 軸 -->
+          <line x1="44" y1="12" x2="44"  y2="78" stroke="#bbb" stroke-width="1.2"/>
+          <line x1="42" y1="75" x2="258" y2="75" stroke="#bbb" stroke-width="1.2"/>
+          <!-- Y軸ラベル -->
+          <text x="40" y="78" text-anchor="end" font-size="7.5" fill="#9c8a72">1</text>
+          <text x="40" y="58" text-anchor="end" font-size="7.5" fill="#9c8a72">3</text>
+          <text x="40" y="38" text-anchor="end" font-size="7.5" fill="#9c8a72">5</text>
+          <text x="40" y="18" text-anchor="end" font-size="7.5" fill="#9c8a72">7</text>
+          <text x="14" y="50" text-anchor="middle" font-size="7" fill="#9c8a72" transform="rotate(-90,14,50)">マス/秒</text>
+          <!-- 塗りつぶしエリア -->
+          <polygon points="44,75 44,75 95.7,66.4 121.4,57.9 147.1,49.3 172.9,40.7 198.6,32.1 224.3,23.6 250,15 250,75" fill="rgba(255,80,64,0.1)"/>
+          <!-- 直線 -->
+          <defs>
+            <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#69DB7C"/>
+              <stop offset="50%" stop-color="#FFD43B"/>
+              <stop offset="100%" stop-color="#FF2040"/>
+            </linearGradient>
+          </defs>
+          <line x1="44" y1="75" x2="250" y2="15" stroke="url(#tg)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- データ点 -->
+          <circle cx="44"   cy="75"   r="3.5" fill="#69DB7C" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="95.7" cy="66.4" r="3"   fill="#A0E050" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="121.4"cy="57.9" r="3"   fill="#FFD43B" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="147.1"cy="49.3" r="3"   fill="#FFAA28" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="172.9"cy="40.7" r="3"   fill="#FF8040" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="198.6"cy="32.1" r="3"   fill="#FF5050" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="224.3"cy="23.6" r="3"   fill="#FF3040" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="250"  cy="15"   r="4.5" fill="#FF2040" stroke="#fff" stroke-width="1.5"/>
+          <!-- X軸ラベル -->
+          <text x="44"  y="88" text-anchor="middle" font-size="7.5" fill="#4A4E69">0秒</text>
+          <text x="44"  y="96" text-anchor="middle" font-size="7"   fill="#9c8a72">Lv1</text>
+          <text x="121.4" y="88" text-anchor="middle" font-size="7.5" fill="#4A4E69">40秒</text>
+          <text x="121.4" y="96" text-anchor="middle" font-size="7"   fill="#9c8a72">Lv5</text>
+          <text x="198.6" y="88" text-anchor="middle" font-size="7.5" fill="#4A4E69">100秒</text>
+          <text x="198.6" y="96" text-anchor="middle" font-size="7"   fill="#9c8a72">Lv11</text>
+          <text x="250"   y="88" text-anchor="middle" font-size="7.5" fill="#FF2040">140秒</text>
+          <text x="250"   y="96" text-anchor="middle" font-size="7"   fill="#FF2040">Lv15</text>
+          <!-- タイトル -->
+          <text x="150" y="108" text-anchor="middle" font-size="7.5" fill="#9c8a72">経過時間</text>
+        </svg>
+
+        <!-- スピード・得点表 -->
+        <table class="techTable">
+          <thead>
+            <tr><th>Lv</th><th>経過</th><th>秒速</th><th>基本得点</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>0秒〜</td><td>1.2マス/秒</td><td>10点</td></tr>
+            <tr><td>3</td><td>20秒〜</td><td>2.1マス/秒</td><td>30点</td></tr>
+            <tr class="hl"><td>5</td><td>40秒〜</td><td>3.0マス/秒</td><td>50点</td></tr>
+            <tr><td>7</td><td>60秒〜</td><td>4.0マス/秒</td><td>70点</td></tr>
+            <tr class="hl"><td>10</td><td>90秒〜</td><td>5.4マス/秒</td><td>100点</td></tr>
+            <tr><td>13</td><td>120秒〜</td><td>6.8マス/秒</td><td>130点</td></tr>
+            <tr class="hl fire"><td>15</td><td>140秒〜</td><td>7.7マス/秒🔥</td><td>150点</td></tr>
+          </tbody>
+        </table>
+
+        <!-- 得点計算式 -->
+        <div class="techFormula">
+          <div class="tfRow"><span class="tfLabel">普通に消えた</span><span class="tfEq">10 × Lv 点</span></div>
+          <div class="tfRow"><span class="tfLabel">🔗 連鎖ボーナス</span><span class="tfEq">10 × Lv × <span class="tfMult">min(コンボ,3) × 連鎖倍率</span></span></div>
+          <div class="tfChain">
+            <span class="cBadge c1">1〜2連鎖 ×5</span>
+            <span class="cBadge c3">3連鎖 ×10</span>
+            <span class="cBadge c4">4連鎖 ×20</span>
+          </div>
+          <div class="tfRow"><span class="tfLabel">🔥 コンボ</span><span class="tfEq">基本点 × <span class="tfMult">れんぞくすう</span> 倍</span></div>
+        </div>
+
+        <!-- 得点例 -->
+        <div class="techEg">
+          <div class="techEgTitle">例：Lv10・コンボ3連続・3連鎖が起きた場合</div>
+          <div class="techEgCalc">10 × 10 × 3 × 10 = <strong>3,000点！</strong></div>
+        </div>
+      </div>
+
+      <button id="rulesBackBtn" class="rulesBackBtn">← もどる</button>
+    </div>
+  </section>
+
+  <!-- ===== 絵のルール画面 ===== -->
+  <section id="vizRulesScreen" class="screen" hidden>
+    <div class="vizWrap">
+
+      <!-- パネル1: 上下で消える ✓ -->
+      <div class="vizCard">
+        <div class="vizBadge ok">✓</div>
+        <svg viewBox="0 0 280 118" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ターゲット "10" バッジ -->
+          <rect x="6" y="6" width="30" height="19" rx="9" fill="#FF7A59"/>
+          <text x="21" y="19" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">10</text>
+          <!-- ブロック 6 (落下) -->
+          <rect x="65" y="8" width="30" height="30" rx="3" fill="#748FFC" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="80" y="27" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif">6</text>
+          <rect x="68" y="10" width="8" height="5" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- 下矢印 -->
+          <line x1="80" y1="42" x2="80" y2="54" stroke="#999" stroke-width="2"/>
+          <polygon points="80,60 74,52 86,52" fill="#999"/>
+          <!-- ブロック 4 -->
+          <rect x="65" y="63" width="30" height="30" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="80" y="82" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif">4</text>
+          <rect x="68" y="65" width="8" height="5" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- → 矢印 -->
+          <line x1="112" y1="78" x2="132" y2="78" stroke="#ccc" stroke-width="2"/>
+          <polygon points="138,78 130,73 130,83" fill="#ccc"/>
+          <!-- 結果: ✨ -->
+          <text x="195" y="88" text-anchor="middle" font-size="42">✨</text>
+        </svg>
+      </div>
+
+      <!-- パネル2: 横では消えない ✗ -->
+      <div class="vizCard">
+        <div class="vizBadge ng">✗</div>
+        <svg viewBox="0 0 280 90" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ターゲット "10" バッジ -->
+          <rect x="6" y="6" width="30" height="19" rx="9" fill="#FF7A59"/>
+          <text x="21" y="19" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">10</text>
+          <!-- ブロック 6 -->
+          <rect x="22" y="28" width="30" height="30" rx="3" fill="#748FFC" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="37" y="47" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif">6</text>
+          <rect x="25" y="30" width="8" height="5" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- ブロック 4 (横に並ぶ) -->
+          <rect x="56" y="28" width="30" height="30" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="71" y="47" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif">4</text>
+          <rect x="59" y="30" width="8" height="5" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- → 矢印 -->
+          <line x1="103" y1="43" x2="120" y2="43" stroke="#ccc" stroke-width="2"/>
+          <polygon points="126,43 118,38 118,48" fill="#ccc"/>
+          <!-- 変わらず残る (薄く) -->
+          <rect x="135" y="28" width="30" height="30" rx="3" fill="#748FFC" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" opacity="0.45"/>
+          <text x="150" y="47" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif" opacity="0.45">6</text>
+          <rect x="169" y="28" width="30" height="30" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" opacity="0.45"/>
+          <text x="184" y="47" text-anchor="middle" fill="white" font-size="15" font-weight="bold" font-family="sans-serif" opacity="0.45">4</text>
+          <!-- ✗ サークル -->
+          <circle cx="248" cy="43" r="19" fill="#F44336"/>
+          <text x="248" y="51" text-anchor="middle" fill="white" font-size="22" font-weight="bold">✗</text>
+        </svg>
+      </div>
+
+      <!-- パネル3: 形がはみ出してもOK ✓ -->
+      <div class="vizCard">
+        <div class="vizBadge ok">✓</div>
+        <svg viewBox="0 0 280 145" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ターゲット "10" バッジ（右上・ブロックと重ならない） -->
+          <rect x="235" y="6" width="30" height="19" rx="9" fill="#FF7A59"/>
+          <text x="250" y="19" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">10</text>
+          <!-- 8ピース: 縦5+右列3（正しい2列の形） -->
+          <!-- 左列: x=25, rows 0-4 -->
+          <rect x="25" y="10" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="25" y="27" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="25" y="44" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="25" y="61" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="25" y="78" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <!-- 右列: x=42, rows 2-4のみ -->
+          <rect x="42" y="44" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="42" y="61" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="42" y="78" width="16" height="16" rx="2" fill="#FF8FE0" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <!-- 右列の下は空（破線） -->
+          <line x1="42" y1="96" x2="42" y2="108" stroke="#ddd" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <line x1="58" y1="96" x2="58" y2="108" stroke="#ddd" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <!-- 2ピース（左列の真下） -->
+          <rect x="25" y="96"  width="16" height="16" rx="2" fill="#FFA94D" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <rect x="25" y="113" width="16" height="16" rx="2" fill="#FFA94D" stroke="rgba(0,0,0,0.2)" stroke-width="1.3"/>
+          <!-- ピース番号 -->
+          <text x="33" y="53" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="10" font-weight="bold" font-family="sans-serif">8</text>
+          <text x="33" y="108" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="10" font-weight="bold" font-family="sans-serif">2</text>
+          <!-- 接触ポイントハイライト -->
+          <rect x="25" y="94" width="16" height="4" rx="1" fill="rgba(255,200,0,0.7)"/>
+          <!-- → 矢印 -->
+          <line x1="90" y1="80" x2="108" y2="80" stroke="#ccc" stroke-width="2"/>
+          <polygon points="114,80 106,75 106,85" fill="#ccc"/>
+          <!-- ✨ 結果 -->
+          <text x="175" y="95" text-anchor="middle" font-size="42">✨</text>
+        </svg>
+      </div>
+
+      <!-- パネル4: ３つでめざすかずになっても消えない ✗ -->
+      <div class="vizCard">
+        <div class="vizBadge ng">✗</div>
+        <svg viewBox="0 0 280 115" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ターゲット "10" バッジ -->
+          <rect x="235" y="6" width="30" height="19" rx="9" fill="#FF7A59"/>
+          <text x="250" y="19" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">10</text>
+          <!-- 落下ブロック [3]（矢印付き） -->
+          <line x1="65" y1="2" x2="65" y2="9" stroke="#999" stroke-width="2"/>
+          <polygon points="65,14 59,8 71,8" fill="#999"/>
+          <rect x="50" y="16" width="28" height="28" rx="3" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="64" y="34" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">3</text>
+          <rect x="53" y="18" width="7" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- 積まれた [3] -->
+          <rect x="50" y="47" width="28" height="28" rx="3" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="64" y="65" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">3</text>
+          <rect x="53" y="49" width="7" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- 積まれた [4] -->
+          <rect x="50" y="78" width="28" height="28" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="64" y="96" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">4</text>
+          <rect x="53" y="80" width="7" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- 3+3+4=10 だが消えない（右側：薄いまま） -->
+          <line x1="95" y1="62" x2="113" y2="62" stroke="#ccc" stroke-width="2"/>
+          <polygon points="119,62 111,57 111,67" fill="#ccc"/>
+          <rect x="128" y="16" width="28" height="28" rx="3" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" opacity="0.45"/>
+          <text x="142" y="34" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif" opacity="0.45">3</text>
+          <rect x="128" y="47" width="28" height="28" rx="3" fill="#FFD43B" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" opacity="0.45"/>
+          <text x="142" y="65" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif" opacity="0.45">3</text>
+          <rect x="128" y="78" width="28" height="28" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" opacity="0.45"/>
+          <text x="142" y="96" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif" opacity="0.45">4</text>
+          <!-- ✗ マーク -->
+          <circle cx="220" cy="62" r="19" fill="#F44336" opacity="0.9"/>
+          <text x="220" y="69" text-anchor="middle" fill="white" font-size="22" font-weight="bold">✗</text>
+          <!-- 説明: 2つずつの組み合わせのみ -->
+          <rect x="3" y="42" width="18" height="18" rx="3" fill="#FFD43B" stroke="rgba(0,0,0,0.2)" stroke-width="1" opacity="0.7"/>
+          <rect x="3" y="62" width="18" height="18" rx="3" fill="#69DB7C" stroke="rgba(0,0,0,0.2)" stroke-width="1" opacity="0.7"/>
+          <text x="12" y="59" text-anchor="middle" fill="#aaa" font-size="9" font-family="sans-serif">2つ</text>
+        </svg>
+      </div>
+
+      <!-- パネル5: 連鎖ボーナス ×5 🔗 -->
+      <div class="vizCard">
+        <div class="vizBadge ok" style="background:#0083b0;">🔗</div>
+        <svg viewBox="0 0 280 115" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ターゲット "10" バッジ -->
+          <rect x="235" y="6" width="30" height="19" rx="9" fill="#FF7A59"/>
+          <text x="250" y="19" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">10</text>
+          <!-- まず普通にマッチ（小さく左側に示す） -->
+          <rect x="10" y="20" width="20" height="20" rx="2" fill="#69DB7C" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+          <text x="20" y="34" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="sans-serif">4</text>
+          <rect x="10" y="42" width="20" height="20" rx="2" fill="#748FFC" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+          <text x="20" y="56" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="sans-serif">6</text>
+          <text x="35" y="55" fill="#aaa" font-size="14">→</text>
+          <text x="52" y="60" font-size="22">✨</text>
+          <!-- じゅうりょくで落ちる矢印 -->
+          <line x1="20" y1="68" x2="20" y2="78" stroke="#888" stroke-width="2"/>
+          <polygon points="20,84 15,76 25,76" fill="#888"/>
+          <!-- 落ちてきた5ブロック -->
+          <rect x="55" y="30" width="28" height="28" rx="3" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="69" y="48" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">5</text>
+          <rect x="58" y="32" width="7" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- 重力矢印 -->
+          <line x1="69" y1="62" x2="69" y2="72" stroke="#888" stroke-width="2"/>
+          <polygon points="69,78 63,70 75,70" fill="#888"/>
+          <!-- 下の5ブロック -->
+          <rect x="55" y="81" width="28" height="28" rx="3" fill="#4DABF7" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>
+          <text x="69" y="99" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">5</text>
+          <rect x="58" y="83" width="7" height="4" rx="2" fill="rgba(255,255,255,0.5)"/>
+          <!-- → 矢印 -->
+          <line x1="100" y1="72" x2="118" y2="72" stroke="#ccc" stroke-width="2"/>
+          <polygon points="124,72 116,67 116,77" fill="#ccc"/>
+          <!-- 結果: ✨ + ×5バッジ -->
+          <text x="148" y="80" text-anchor="middle" font-size="32">✨</text>
+          <rect x="172" y="52" width="50" height="26" rx="13" fill="#0083b0"/>
+          <text x="197" y="69" text-anchor="middle" fill="white" font-size="14" font-weight="bold" font-family="sans-serif">× 5 !</text>
+        </svg>
+      </div>
+
+      <button id="vizBackBtn" class="rulesBackBtn">← もどる</button>
+    </div>
+  </section>
+  <section id="gameScreen" class="screen" hidden>
+    <div class="fieldWrap" id="fieldWrap">
+      <!-- HUD オーバーレイ -->
+      <header class="hud">
+        <div class="hudCol">
+          <span id="targetBadge" class="targetBadge">10つくりす</span>
+        </div>
+        <div class="hudCol">
+          <span class="hudLabel">スピード</span>
+          <span id="speedNum" class="speedNumHud">1</span>
+        </div>
+        <div class="hudCol">
+          <span class="hudLabel">スコア</span>
+          <span id="scoreBadge" class="scoreBadge">0</span>
+        </div>
+        <div class="hudCol">
+          <span class="hudLabel">つぎ</span>
+          <span id="nextBadge" class="nextBadge">?</span>
+        </div>
+      </header>
+      <div id="comboBanner"></div>
+      <div id="field" class="field"></div>
+    </div>
+    <div class="controls" id="controls">
+      <button id="rotLBtn"  class="ctrlBtn rot-btn" aria-label="左回転">↺</button>
+      <button id="leftBtn"  class="ctrlBtn move"    aria-label="ひだり">◀</button>
+      <button id="dropBtn"  class="ctrlBtn down"    aria-label="おとす">▼</button>
+      <button id="rightBtn" class="ctrlBtn move"    aria-label="みぎ">▶</button>
+      <button id="rotRBtn"  class="ctrlBtn rot-btn" aria-label="右回転">↻</button>
+    </div>
+    <div class="keyguide" id="keyguide">
+      <span>← → いどう</span><span class="kg-sep">｜</span>
+      <span>F はんてん</span><span class="kg-sep kg-rot">｜</span>
+      <span>↓ おとす</span><span class="kg-sep kg-rot">｜</span>
+      <span class="kg-rot">D ひだりまわり</span><span class="kg-sep kg-rot">｜</span>
+      <span class="kg-rot">C みぎまわり</span>
+    </div>
+  </section>
+
+  <!-- ===== ゲームオーバー ===== -->
+  <section id="overScreen" class="screen" hidden>
+    <div class="overContent">
+      <!-- どのステージをプレイしたか -->
+      <div class="overStageInfo" id="overStageInfo">ステージ3 ・ 10つくりす</div>
+
+      <!-- スコア大表示 -->
+      <div class="overScoreArea">
+        <div id="firstTimeBanner" class="firstTimeBanner" hidden>🎊 はじめてのきろく！</div>
+        <div id="newBestBanner" class="newBest" hidden>🎉 しんきろく！</div>
+        <div class="overScoreLabel">スコア</div>
+        <div id="finalScore" class="overScoreNum">0</div>
+      </div>
+
+      <!-- スタット3枚 -->
+      <div class="overStatsGrid">
+        <div class="overStatCard">
+          <span class="osIcon">🏆</span>
+          <span class="osVal best" id="finalBest">―</span>
+          <span class="osLabel">ベスト</span>
+        </div>
+        <div class="overStatCard">
+          <span class="osIcon">✨</span>
+          <span class="osVal" id="finalCount">0</span>
+          <span class="osLabel">けした かず</span>
+        </div>
+        <div class="overStatCard">
+          <span class="osIcon">🔥</span>
+          <span class="osVal" id="finalCombo">0</span>
+          <span class="osLabel">さいこうコンボ</span>
+        </div>
+      </div>
+
+      <!-- とくてんの内訳 -->
+      <div class="scoreBreakdown" id="scoreBreakdown">
+        <div class="sbTitle">とくてんの内訳</div>
+        <div class="sbRow"><span class="sbLabel">✨ ふつうにけした</span><span class="sbVal" id="sbNormal">―</span></div>
+        <div class="sbRow"><span class="sbLabel">🔗 れんさボーナス</span><span class="sbVal sbValChain" id="sbChain">―</span></div>
+        <div class="sbRow"><span class="sbLabel">🔥 コンボボーナス</span><span class="sbVal sbValCombo" id="sbCombo">―</span></div>
+      </div>
+
+      <!-- れんさかいすう -->
+      <div class="chainCountsCard" id="chainCountsCard" style="display:none">
+        <div class="chainCountsTitle">🔗 れんさ かいすう</div>
+        <div class="chainCountsList" id="chainCountsList"></div>
+      </div>
+
+      <div class="overButtons">
+        <button id="retryBtn" class="primaryBtn">もう いちど</button>
+        <button id="changeLevelBtn" class="secondaryBtn">はじめへ</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+(function(){
+  "use strict";
+
+  // ===== 定数 =====
+  var COLORS = {1:'#909090',2:'#FFA94D',3:'#FFD43B',4:'#69DB7C',5:'#4DABF7',6:'#748FFC',7:'#DA77F2',8:'#FF8FE0',9:'#F06595'};
+
+  // ブロック形状（ブロックモード用）
+  var BLOCK_SHAPES = {
+    1:[[0,0]],
+    2:[[0,0],[1,0]],
+    3:[[0,0],[1,0],[2,0]],
+    4:[[0,0],[1,0],[2,0],[3,0]],
+    5:[[0,0],[1,0],[2,0],[3,0],[4,0]],
+    6:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1]],           // 縦5+右列1
+    7:[[0,0],[1,0],[2,0],[3,0],[4,0],[3,1],[4,1]],     // 縦5+右列2
+    8:[[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[3,1],[4,1]],// 縦5+右列3
+    9:[[0,0],[1,0],[2,0],[3,0],[4,0],[1,1],[2,1],[3,1],[4,1]] // 縦5+右列4
+  };
+  var SHAPE_W={1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2};
+
+  var STAGE_TARGETS={1:8,2:9,3:10,4:11};
+  var BASE_MS=850,MIN_MS=130,SPEED_STEPS=15,SPEED_INTERVAL=10000;
+  var COMBO_WINDOW=2000,COMBO_MIN=2,COMBO_BONUS=5;
+
+  // グリッド寸法（モードによって変わる）
+  var COLS=10,ROWS=18,CELL=28;
+
+  // ===== DOM =====
+  var E=function(id){ return document.getElementById(id); };
+  var els={
+    startScreen:E('startScreen'), gameScreen:E('gameScreen'), overScreen:E('overScreen'),
+    field:E('field'), fieldWrap:E('fieldWrap'), controls:E('controls'),
+    targetBadge:E('targetBadge'), nextBadge:E('nextBadge'),
+    scoreBadge:E('scoreBadge'), comboBanner:E('comboBanner'),
+    leftBtn:E('leftBtn'), rightBtn:E('rightBtn'),
+    rotLBtn:E('rotLBtn'), rotRBtn:E('rotRBtn'), dropBtn:E('dropBtn'),
+    finalScore:E('finalScore'), finalBest:E('finalBest'),
+    finalCount:E('finalCount'), finalCombo:E('finalCombo'),
+    newBestBanner:E('newBestBanner'), retryBtn:E('retryBtn'), changeLevelBtn:E('changeLevelBtn')
+  };
+
+  // ===== 状態 =====
+  var G={
+    stage:1, mode:'block', target:8, blockMode:true,
+    grid:[], pieces:{}, nextPid:1,
+    falling:null, nextValue:null,
+    running:false, rafId:null, lastTime:0,
+    elapsedMs:0, speedLevel:1,
+    score:0, successCount:0,
+    comboCount:0, maxCombo:0, lastClearTime:null,
+    landingLocked:false, hardDropUsed:false,
+    chainCounts:{}, // 連鎖かいすう記録 {1:5, 2:3, 3:1 ...}
+    watchdog:null,
+    normalScore:0, chainScoreTotal:0, comboScoreTotal:0 // とくてん内訳
+  };
+
+  // ===== ハイスコア =====
+  function bKey(s,m){ return 'kazu_s'+s+'_'+m; }
+  function loadBest(s,m){ try{ var v=localStorage.getItem(bKey(s,m)); return v?parseInt(v,10):null; }catch(e){ return null; } }
+  function saveBest(s,m,sc){ try{ localStorage.setItem(bKey(s,m),sc); }catch(e){} }
+  function refreshBests(){
+    [1,2,3,4].forEach(function(s){
+      ['block','suuji'].forEach(function(m){
+        var b=loadBest(s,m);
+        var el=E('ac'+s+(m==='block'?'b':'s'));
+        if(el) el.textContent=b!=null?'ベスト:'+b+'てん':'ベスト:―';
+      });
+    });
+  }
+
+  // ===== 音 =====
+  var AC=null;
+  function ensureAC(){ if(!AC) try{ AC=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  function beep(f,d,t){ if(!AC) return; try{ var o=AC.createOscillator(),g=AC.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.value=0.12; o.connect(g); g.connect(AC.destination); var n=AC.currentTime; o.start(n); g.gain.exponentialRampToValueAtTime(0.0001,n+d); o.stop(n+d+0.02); }catch(e){} }
+  function chime(c){ if(c>=3){ beep(784,0.07); setTimeout(function(){ beep(988,0.07); },65); setTimeout(function(){ beep(1175,0.14); },130); } else { beep(784,0.09); setTimeout(function(){ beep(1046,0.14); },80); } }
+  function thunk(){ beep(200,0.07,'triangle'); }
+  function goSound(){ beep(392,0.16,'sawtooth'); setTimeout(function(){ beep(196,0.22,'sawtooth'); },130); }
+
+  // ===== モード設定 =====
+  function applyModeDimensions(){
+    if(G.blockMode){ COLS=16; ROWS=24; }
+    else            { COLS=9;  ROWS=12; }
+  }
+  function computeCell(){
+    var ctrlH=56, guideH=G.blockMode?20:0;
+    var reserved=ctrlH+guideH+14+15;
+    var aH=window.innerHeight-reserved;
+    var aW=Math.min(window.innerWidth-24,440)-12;
+    var cH=Math.floor(aH/ROWS);
+    var cW=Math.floor(aW/COLS);
+    var sz=Math.min(cH,cW);
+    if(G.blockMode) return Math.max(12,Math.min(28,sz));
+    else            return Math.max(28,Math.min(68,sz));
+  }
+  function lighten(hex){
+    var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return 'rgb('+Math.min(255,Math.round(r*1.25))+','+Math.min(255,Math.round(g*1.25))+','+Math.min(255,Math.round(b*1.25))+')';
+  }
+
+  // ===== グリッド =====
+  function initGrid(){
+    G.grid=[]; G.pieces={}; G.nextPid=1;
+    for(var r=0;r<ROWS;r++){ G.grid.push([]); for(var c=0;c<COLS;c++) G.grid[r].push(null); }
+    els.field.style.backgroundSize=CELL+'px '+CELL+'px';
+
+    // 限界ライン（上から2行目）
+    var limitRow=2;
+    var zoneEl=document.createElement('div');
+    zoneEl.className='danger-zone'; zoneEl.id='dangerZone';
+    zoneEl.style.height=(limitRow*CELL)+'px';
+    els.field.appendChild(zoneEl);
+
+    var lineEl=document.createElement('div');
+    lineEl.className='limit-line'; lineEl.id='limitLine';
+    lineEl.style.top=(limitRow*CELL)+'px';
+    lineEl.innerHTML='<span class="limit-label">⚠ げんかいライン</span>';
+    els.field.appendChild(lineEl);
+  }
+  function isValid(ar,ac,shape){
+    for(var i=0;i<shape.length;i++){
+      var r=ar+shape[i][0],c=ac+shape[i][1];
+      if(c<0||c>=COLS||r>=ROWS) return false;
+      if(r>=0&&G.grid[r][c]) return false;
+    }
+    return true;
+  }
+
+  // ===== セルDOM =====
+  function makeCell(color,isFall,value,isAnchor){
+    var el=document.createElement('div');
+    el.className='tc'+(isFall?' fall':'');
+    var sz=CELL-2;
+    el.style.width=el.style.height=sz+'px';
+    el.style.background=color;
+    if(!G.blockMode && isAnchor){
+      el.textContent=value;
+      el.style.fontSize=Math.max(14,Math.floor(sz*0.5))+'px';
+      el.classList.add('num-cell');
+      el.style.setProperty('--sc2',lighten(color));
+    }
+    return el;
+  }
+  function posCell(el,rowF,col){
+    el.style.left=(col*CELL+1)+'px';
+    el.style.top=(rowF*CELL+1)+'px';
+  }
+
+  // ===== 形状 =====
+  function getShape(v){ return G.blockMode?BLOCK_SHAPES[v]:[[0,0]]; }
+  function getShapeW(v){ return G.blockMode?(SHAPE_W[v]||1):1; }
+
+  // ===== 数値選択 =====
+  function validRange(){ var t=G.target; return {mn:Math.max(1,t-9),mx:Math.min(t-1,9)}; }
+  function pickNext(){
+    var r=validRange(),t=G.target,comps=[];
+    Object.keys(G.pieces).forEach(function(pid){ var p=G.pieces[pid]; if(!p._rm){ var cp=t-p.value; if(cp>=r.mn&&cp<=r.mx) comps.push(cp); } });
+    if(comps.length&&Math.random()<0.30) return comps[Math.floor(Math.random()*comps.length)];
+    return r.mn+Math.floor(Math.random()*(r.mx-r.mn+1));
+  }
+  function updateNextBadge(){ els.nextBadge.textContent=G.nextValue; els.nextBadge.style.background=COLORS[G.nextValue]; }
+
+  // ===== スポーン =====
+  function spawnFalling(){
+    if(G.landingLocked) return;
+    var value=G.nextValue, shape=getShape(value), sw=getShapeW(value);
+    var anchorCol=Math.floor((COLS-sw)/2);
+    if(!isValid(0,anchorCol,shape)){ gameOver(); return; }
+    var color=COLORS[value], cellEls=[];
+    shape.forEach(function(dc,i){
+      var el=makeCell(color,true,value,i===0);
+      posCell(el,dc[0],anchorCol+dc[1]);
+      els.field.appendChild(el); cellEls.push(el);
+    });
+    G.falling={value:value,shape:shape,anchorRowF:0,anchorCol:anchorCol,color:color,els:cellEls};
+    G.nextValue=pickNext(); updateNextBadge();
+  }
+
+  // ===== スピード =====
+  function currentMs(){
+    var t=(G.speedLevel-1)/(SPEED_STEPS-1); // 0〜1
+    var minSpd=1000/BASE_MS; // 最遅の秒速（マス/秒）
+    var maxSpd=1000/MIN_MS;  // 最速の秒速（マス/秒）
+    var spd=minSpd+(maxSpd-minSpd)*t; // 秒速を線形に増加
+    return Math.round(1000/spd); // msに変換
+  }
+  function updateSpeedUI(){
+    var sn=document.getElementById('speedNum');
+    if(sn) sn.textContent=G.speedLevel;
+  }
+  function checkSpeed(){ var nl=Math.min(SPEED_STEPS,Math.floor(G.elapsedMs/SPEED_INTERVAL)+1); if(nl>G.speedLevel){ G.speedLevel=nl; updateSpeedUI(); } }
+
+  // ===== ループ =====
+  function loop(ts){
+    if(!G.running) return;
+    var dt=ts-G.lastTime; G.lastTime=ts;
+    G.elapsedMs+=dt; checkSpeed();
+    updateFalling(dt);
+    G.rafId=requestAnimationFrame(loop);
+  }
+  function renderFalling(){
+    var f=G.falling; if(!f) return;
+    f.shape.forEach(function(dc,i){ posCell(f.els[i],f.anchorRowF+dc[0],f.anchorCol+dc[1]); });
+  }
+  function updateFalling(dt){
+    if(!G.falling||G.landingLocked) return;
+    var f=G.falling;
+    f.anchorRowF+=dt/currentMs();
+    var intRow=Math.floor(f.anchorRowF);
+    if(!isValid(intRow,f.anchorCol,f.shape)){ intRow=Math.max(0,intRow-1); f.anchorRowF=intRow; }
+    if(!isValid(intRow+1,f.anchorCol,f.shape)){ f.anchorRowF=intRow; renderFalling(); land(); }
+    else renderFalling();
+  }
+
+  // ===== 操作 =====
+  function moveF(d){
+    if(!G.falling||G.landingLocked) return;
+    var f=G.falling,nc=f.anchorCol+d;
+    if(isValid(Math.floor(f.anchorRowF),nc,f.shape)){
+      f.anchorCol=nc; renderFalling();
+    } else {
+      var b=d<0?els.leftBtn:els.rightBtn;
+      b.classList.remove('shaking'); void b.offsetWidth; b.classList.add('shaking');
+    }
+  }
+  function hardDrop(){
+    if(!G.falling||G.landingLocked) return;
+    G.hardDropUsed=true;  // ← ハードドロップフラグ
+    var f=G.falling,r=Math.floor(f.anchorRowF);
+    while(isValid(r+1,f.anchorCol,f.shape)) r++;
+    f.anchorRowF=r; renderFalling(); land();
+  }
+
+  // ===== 回転・反転（ブロックモードのみ） =====
+  function transformShape(shape,type){
+    var maxR=0,maxC=0;
+    shape.forEach(function(rc){ maxR=Math.max(maxR,rc[0]); maxC=Math.max(maxC,rc[1]); });
+    var ns;
+    if(type==='cw')    ns=shape.map(function(rc){ return [rc[1],maxR-rc[0]]; });
+    else if(type==='ccw')  ns=shape.map(function(rc){ return [maxC-rc[1],rc[0]]; });
+    else if(type==='flip') ns=shape.map(function(rc){ return [rc[0],maxC-rc[1]]; });
+    var mr=Infinity,mc=Infinity;
+    ns.forEach(function(rc){ mr=Math.min(mr,rc[0]); mc=Math.min(mc,rc[1]); });
+    return ns.map(function(rc){ return [rc[0]-mr,rc[1]-mc]; });
+  }
+  function tryTransform(type){
+    if(!G.falling||G.landingLocked||!G.blockMode) return;
+    var f=G.falling,ns=transformShape(f.shape,type),intRow=Math.floor(f.anchorRowF);
+    var kicks=[0,-1,1,-2,2,-3,3];
+    for(var k=0;k<kicks.length;k++){
+      var nc=f.anchorCol+kicks[k];
+      for(var u=0;u<=2;u++){
+        var nr=Math.max(0,intRow-u);
+        if(isValid(nr,nc,ns)){ f.shape=ns; f.anchorCol=nc; f.anchorRowF=nr; renderFalling(); return; }
+      }
+    }
+  }
+
+  // ===== 着地 =====
+  function land(){
+    if(G.landingLocked) return;
+    G.landingLocked=true;
+    startWatchdog();
+    console.log('[land] start pid='+G.nextPid);
+    var f=G.falling; G.falling=null;
+    var intRow=Math.floor(f.anchorRowF),pid=G.nextPid++,cells=[],pEls=[];
+    f.shape.forEach(function(dc,i){
+      var r=intRow+dc[0],c=f.anchorCol+dc[1];
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS){
+        G.grid[r][c]={pid:pid,value:f.value}; cells.push([r,c]);
+        var el=f.els[i]; el.classList.remove('fall'); el.classList.add('land'); pEls.push(el);
+      }
+    });
+    G.pieces[pid]={value:f.value,cells:cells,els:pEls,color:f.color};
+    if(cells.some(function(rc){ return rc[0]<=0; })){
+      console.log('[land] top reached → gameOver');
+      clearWatchdog(); gameOver(); return;
+    }
+    console.log('[land] placed at rows '+cells.map(function(r){return r[0];}).join(','));
+    thunk(); checkMatches(pid);
+  }
+
+  // ===== 最上段チェック =====
+  function isTopFull(){
+    for(var c=0;c<COLS;c++) if(G.grid[0][c]) return true;
+    return false;
+  }
+
+  // ===== ウォッチドッグ: 5秒以上固まったら強制ゲームオーバー =====
+  function startWatchdog(){
+    clearWatchdog();
+    G.watchdog=setTimeout(function(){
+      if(G.landingLocked&&G.running){
+        console.warn('watchdog: game frozen → force gameOver');
+        G.landingLocked=false;
+        gameOver();
+      }
+    },5000);
+  }
+  function clearWatchdog(){
+    if(G.watchdog){ clearTimeout(G.watchdog); G.watchdog=null; }
+  }
+  function unlockLanding(){
+    console.log('[unlockLanding] releasing lock → spawnFalling');
+    clearWatchdog();
+    G.landingLocked=false;
+  }
+
+  // ===== 限界ライン演出 =====
+  function updateDangerState(){
+    var limitRow=2, isDanger=false;
+    for(var r=0;r<=limitRow&&!isDanger;r++)
+      for(var c=0;c<COLS;c++){ if(G.grid[r][c]){ isDanger=true; break; } }
+    var lineEl=document.getElementById('limitLine');
+    var zoneEl=document.getElementById('dangerZone');
+    if(isDanger){
+      lineEl&&lineEl.classList.add('danger');
+      zoneEl&&zoneEl.classList.add('active');
+      els.field.classList.add('field-danger');
+    } else {
+      lineEl&&lineEl.classList.remove('danger');
+      zoneEl&&zoneEl.classList.remove('active');
+      els.field.classList.remove('field-danger');
+    }
+  }
+
+  // ===== 連鎖アナウンス表示 =====
+  function showChainAnn(n){
+    var el=document.createElement('div');
+    var marks='！'.repeat(Math.min(n,4));
+    el.className='chain-ann c'+Math.min(n,4);
+    el.textContent=n+'れんさ'+marks;
+    // ×倍バッジ
+    if(n>=3){
+      var badge=document.createElement('span');
+      badge.style.cssText='margin-left:8px;font-size:0.6em;background:rgba(0,0,0,0.25);border-radius:8px;padding:2px 8px;';
+      badge.textContent='×'+(n>=4?'20':'10')+'！';
+      el.appendChild(badge);
+    }
+    els.fieldWrap.appendChild(el);
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },1400);
+  }
+
+  // ===== 重力後の連鎖マッチチェック =====
+  function checkChainMatches(onDone, chainNum, movedPids){
+    chainNum=chainNum||0;
+    console.log('[checkChain] chainNum='+chainNum+' movedPids='+JSON.stringify(Object.keys(movedPids||{})));
+    var found=false;
+    var pids=Object.keys(G.pieces);
+    for(var i=0;i<pids.length;i++){
+      var pid=parseInt(pids[i],10);
+      var piece=G.pieces[pid];
+      if(!piece||piece._rm) continue;
+      // 重力で実際に動いたピースのみチェック（静止ピース同士は消えない）
+      if(movedPids&&!movedPids[pid]) continue;
+      var matchPid=null;
+      for(var j=0;j<piece.cells.length;j++){
+        var br=piece.cells[j][0]+1, bc=piece.cells[j][1];
+        if(br<ROWS&&G.grid[br]&&G.grid[br][bc]){
+          var apid=G.grid[br][bc].pid;
+          var ap=G.pieces[apid];
+          if(ap&&!ap._rm&&!piece._rm&&ap.value+piece.value===G.target){
+            matchPid=apid; break;
+          }
+        }
+      }
+      if(matchPid!==null){
+        found=true;
+        chainNum++;
+        G.chainCounts[chainNum]=(G.chainCounts[chainNum]||0)+1;
+        var mp=G.pieces[matchPid];
+        piece._rm=true; mp._rm=true;
+
+        var chainMult=chainNum>=4?20:chainNum>=3?10:5;
+        var now2=Date.now();
+        if(G.lastClearTime&&(now2-G.lastClearTime)<=COMBO_WINDOW) G.comboCount++;
+        else G.comboCount=1;
+        G.lastClearTime=now2;
+        if(G.comboCount>G.maxCombo) G.maxCombo=G.comboCount;
+        var comboCap=Math.min(G.comboCount,3); // コンボは3まで上限
+        var gained2=10*G.speedLevel*comboCap*chainMult;
+        G.chainScoreTotal+=gained2;
+        G.score+=gained2; G.successCount++;
+        els.scoreBadge.textContent=G.score;
+
+        var mc2=piece.cells[Math.floor(piece.cells.length/2)];
+        floater(mc2[1],mc2[0],'🔗 れんさ！','cel');
+        floater(mc2[1],mc2[0]-1,'+'+gained2+'てん','sco');
+        setTimeout(function(){ showChainAnn(chainNum); },80);
+
+        if(AC&&AC.state==='suspended') AC.resume();
+        chainSound(chainNum); // 連鎖専用の派手な音
+        if(G.comboCount>=COMBO_MIN){ showCombo(G.comboCount); }
+
+        var gravDur=chainNum>=4?900:chainNum>=3?700:chainNum>=2?500:320;
+
+        ;(function(p1,p2,cn){
+          setTimeout(function(){
+            try{
+              removePiece(p1); removePiece(p2);
+              applyGravity(function(newMoved){
+                try{
+                  if(isTopFull()){ clearWatchdog(); gameOver(); return; }
+                  updateDangerState();
+                  checkChainMatches(onDone, cn, newMoved);
+                }catch(e){ console.error('chain gravity cb err',e); unlockLanding(); }
+              }, gravDur);
+            }catch(e){ console.error('chain remove err',e); unlockLanding(); }
+          },50);
+        })(pid,matchPid,chainNum);
+        return;
+      }
+    }
+    if(!found) onDone();
+  }
+
+  // ===== 重力（両モード共通: 消えた上のブロックをひとかたまりで落とす） =====
+  function applyGravity(onDone, animDur){
+    animDur = animDur || 230;
+    var durSec = (animDur/1000).toFixed(2)+'s';
+    console.log('[applyGravity] animDur='+animDur+'ms');
+    // グリッドをクリアして再配置
+    for(var r=0;r<ROWS;r++) for(var c=0;c<COLS;c++) G.grid[r][c]=null;
+
+    // 残ピースを「一番下のセルが低い順」に並べる（底から先に落とす）
+    var pids=Object.keys(G.pieces).filter(function(pid){
+      return G.pieces[pid]&&!G.pieces[pid]._rm;
+    });
+    pids.sort(function(a,b){
+      var aBot=Math.max.apply(null,G.pieces[a].cells.map(function(rc){return rc[0];}));
+      var bBot=Math.max.apply(null,G.pieces[b].cells.map(function(rc){return rc[0];}));
+      return bBot-aBot; // 底に近いピースを先に処理
+    });
+
+    var hasMoved=false;
+    var movedPids={}; // 実際に落ちたピースを記録
+
+    pids.forEach(function(pid){
+      var piece=G.pieces[pid];
+
+      // このピースが落ちられる最大距離を計算（最大ROWS回で打ち切り）
+      var drop=0;
+      while(drop<=ROWS){
+        if(piece.cells.length===0) break; // セルなし→スキップ
+        var ok=true;
+        for(var i=0;i<piece.cells.length;i++){
+          var nr=piece.cells[i][0]+drop+1;
+          var nc=piece.cells[i][1];
+          if(nr<0||nr>=ROWS||nc<0||nc>=COLS){ ok=false; break; }
+          if(G.grid[nr][nc]){ ok=false; break; }
+        }
+        if(!ok) break;
+        drop++;
+      }
+
+      // 落とす
+      if(drop>0){
+        hasMoved=true;
+        movedPids[pid]=true; // このピースは動いた
+        piece.cells=piece.cells.map(function(rc){ return [rc[0]+drop, rc[1]]; });
+        piece.cells.forEach(function(rc,i){
+          piece.els[i].style.transition='top '+durSec+' ease-in';
+          piece.els[i].classList.add('settling');
+          posCell(piece.els[i], rc[0], rc[1]);
+        });
+      }
+
+      // グリッドに再登録
+      piece.cells.forEach(function(rc){
+        G.grid[rc[0]][rc[1]]={pid:parseInt(pid,10), value:piece.value};
+      });
+    });
+
+    if(hasMoved){
+      setTimeout(function(){
+        Object.keys(G.pieces).forEach(function(pid){
+          var p=G.pieces[pid];
+          if(p&&p.els) p.els.forEach(function(el){
+            el.style.transition='';
+            el.classList.remove('settling');
+          });
+        });
+        console.log('[applyGravity] settled, moved='+Object.keys(movedPids));
+        onDone(movedPids);
+      },animDur+20);
+    } else {
+      console.log('[applyGravity] no movement');
+      onDone(movedPids);
+    }
+  }
+
+  // ===== マッチチェック =====
+  function checkMatches(pid){
+    var piece=G.pieces[pid]; if(!piece) return;
+    var adj={};
+
+    // 着地ピースの各セルの【真下のみ】を調べる（横・上の接触は無効）
+    piece.cells.forEach(function(rc){
+      var r=rc[0]+1, c=rc[1];  // 真下
+      if(r>=0&&r<ROWS&&c>=0&&c<COLS&&G.grid[r][c]){
+        var apid=G.grid[r][c].pid;
+        if(apid!==pid) adj[apid]=true;
+      }
+    });
+
+    var toRemove=[];
+    Object.keys(adj).forEach(function(apid){
+      var ap=G.pieces[apid];
+      if(!ap||ap._rm||piece._rm) return;
+      // ★ 厳密に合計値 === ターゲットを確認
+      var sum=ap.value+piece.value;
+      if(sum===G.target) toRemove.push(parseInt(apid,10));
+    });
+
+    if(toRemove.length>0){
+      // 削除前に再確認（Bオプション: 最初の1ピースのみとマッチ）
+      toRemove=toRemove.filter(function(apid){
+        var ap=G.pieces[apid];
+        return ap && !ap._rm && !piece._rm && (ap.value+piece.value===G.target);
+      }).slice(0,1); // ← 最大1ピースのみ
+    }
+
+    if(toRemove.length>0){
+      console.log('[checkMatches] match! pid='+pid+' removes='+toRemove);
+      piece._rm=true;
+      toRemove.forEach(function(apid){ if(G.pieces[apid]) G.pieces[apid]._rm=true; });
+
+      // コンボ・スコア
+      var now=Date.now();
+      var cWindow=G.hardDropUsed?4000:COMBO_WINDOW; // ハードドロップ時は4秒
+      G.hardDropUsed=false;
+      if(G.lastClearTime&&(now-G.lastClearTime)<=cWindow) G.comboCount++;
+      else G.comboCount=1;
+      G.lastClearTime=now;
+      if(G.comboCount>G.maxCombo) G.maxCombo=G.comboCount;
+      var baseGained=10*G.speedLevel;
+      var gained=baseGained*G.comboCount; // N連続でN倍
+      G.normalScore+=baseGained;
+      G.comboScoreTotal+=gained-baseGained; // コンボボーナス分
+      G.score+=gained; G.successCount++;
+      els.scoreBadge.textContent=G.score;
+
+      var mc=piece.cells[Math.floor(piece.cells.length/2)];
+      floater(mc[1],mc[0],'✨ぴったり！','cel');
+      floater(mc[1],mc[0]-1,'+'+gained+'てん','sco');
+      // AudioContext停止中なら再開してから音を鳴らす
+      if(AC&&AC.state==='suspended') AC.resume();
+      if(G.comboCount>=COMBO_MIN){ showCombo(G.comboCount); setTimeout(function(){ floater(mc[1],mc[0]-2,'コンボ×'+G.comboCount+'！','cmb'); },100); }
+      chime(G.comboCount);
+
+      setTimeout(function(){
+        try{
+          removePiece(pid); toRemove.forEach(function(apid){ removePiece(apid); });
+          applyGravity(function(movedPids){
+            try{
+              if(isTopFull()){ clearWatchdog(); gameOver(); return; }
+              updateDangerState();
+              checkChainMatches(function(){
+                try{
+                  if(isTopFull()){ clearWatchdog(); gameOver(); return; }
+                  unlockLanding();
+                  if(G.running) setTimeout(function(){ if(G.running) spawnFalling(); },60);
+                }catch(e){ console.error('chainDone err',e); unlockLanding(); }
+              }, 0, movedPids);
+            }catch(e){ console.error('gravity cb err',e); unlockLanding(); }
+          });
+        }catch(e){ console.error('remove/gravity err',e); unlockLanding(); }
+      },50);
+    } else {
+      // マッチなし → 積み上げ: コンボを完全リセット
+      G.comboCount=0;
+      G.lastClearTime=null;
+      unlockLanding();
+      updateDangerState();
+      var topFull=false;
+      for(var c=0;c<COLS;c++){ if(G.grid[0][c]){ topFull=true; break; } }
+      if(topFull) gameOver(); else spawnFalling();
+    }
+  }
+  function removePiece(pid){
+    var p=G.pieces[pid]; if(!p) return;
+    p.cells.forEach(function(rc){ if(G.grid[rc[0]]&&G.grid[rc[0]][rc[1]]&&G.grid[rc[0]][rc[1]].pid===pid) G.grid[rc[0]][rc[1]]=null; });
+    p.els.forEach(function(el){ el.classList.add('pop'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },360); });
+    delete G.pieces[pid];
+  }
+
+  // ===== エフェクト =====
+  function floater(col,row,text,cls){
+    var d=document.createElement('div'); d.className='floater '+cls; d.textContent=text;
+    d.style.left=(col*CELL+CELL/2)+'px'; d.style.top=(row*CELL)+'px';
+    els.field.appendChild(d); setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); },800);
+  }
+  var cBTimer=null;
+  function showCombo(n){
+    els.comboBanner.textContent='コンボ×'+n+'！'; els.comboBanner.classList.add('show');
+    clearTimeout(cBTimer); cBTimer=setTimeout(function(){ els.comboBanner.classList.remove('show'); },1200);
+  }
+
+  // ===== ゲーム初期化 =====
+  function initGame(stage,mode){
+    G.stage=stage; G.mode=mode; G.target=STAGE_TARGETS[stage]; G.blockMode=(mode==='block');
+    G.score=0; G.successCount=0; G.comboCount=0; G.maxCombo=0; G.lastClearTime=null;
+    G.falling=null; G.elapsedMs=0; G.speedLevel=1; G.landingLocked=false; G.hardDropUsed=false;
+    G.chainCounts={}; G.normalScore=0; G.chainScoreTotal=0; G.comboScoreTotal=0;
+
+    applyModeDimensions();
+    CELL=computeCell();
+
+    // フィールド構築
+    els.field.innerHTML='';
+    els.field.style.width=(CELL*COLS)+'px'; els.field.style.height=(CELL*ROWS)+'px';
+    els.fieldWrap.style.width=(CELL*COLS)+'px';
+    els.field.style.setProperty('--cs',CELL+'px');
+    initGrid();
+
+    // HUD
+    els.targetBadge.textContent=G.target+'つくりす';
+    els.scoreBadge.textContent='0';
+    els.comboBanner.classList.remove('show');
+    updateSpeedUI();
+
+    // コントロール・キーガイド表示切替
+    var kg=document.getElementById('keyguide');
+    if(G.blockMode){
+      els.controls.className='controls';
+      kg&&kg.classList.remove('no-rot');
+    } else {
+      els.controls.className='controls no-rot';
+      kg&&kg.classList.add('no-rot');
+    }
+
+    G.nextValue=pickNext(); updateNextBadge();
+    spawnFalling();
+    G.running=true; G.lastTime=performance.now();
+    if(G.rafId) cancelAnimationFrame(G.rafId);
+    G.rafId=requestAnimationFrame(loop);
+  }
+
+  // ===== ゲームオーバー =====
+  // ===== コンフェッティ =====
+  function launchConfetti(count){
+    var colors=['#FF6B6B','#FFD43B','#69DB7C','#4DABF7','#DA77F2','#FF8FE0','#FFA94D','#fff'];
+    for(var i=0;i<count;i++){
+      (function(i){
+        setTimeout(function(){
+          var el=document.createElement('div');
+          var sz=(6+Math.random()*10)|0;
+          el.style.cssText='position:fixed;top:-14px;z-index:9999;pointer-events:none;'+
+            'left:'+(Math.random()*100)+'%;'+
+            'width:'+sz+'px;height:'+sz+'px;'+
+            'background:'+colors[Math.floor(Math.random()*colors.length)]+';'+
+            'border-radius:'+(Math.random()>0.5?'50%':'3px')+';'+
+            'animation:confettiFall '+(1.3+Math.random()*1.5)+'s '+(Math.random()*0.6)+'s linear forwards;';
+          document.body.appendChild(el);
+          setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },3000);
+        },i*20);
+      })(i);
+    }
+  }
+  function chainSound(n){
+    if(AC&&AC.state==='suspended') AC.resume();
+    if(n>=4){
+      // 4連鎖以上：壮大な6音ファンファーレ
+      [523,659,784,1047,1319,1568].forEach(function(f,i){
+        setTimeout(function(){ beep(f, i<5?0.07:0.4); }, i*65);
+      });
+    } else if(n===3){
+      // 3連鎖：5音の大ファンファーレ
+      [587,740,880,1175,1480].forEach(function(f,i){
+        setTimeout(function(){ beep(f, i<4?0.08:0.35); }, i*70);
+      });
+    } else if(n===2){
+      // 2連鎖：4音ファンファーレ
+      [659,784,988,1319].forEach(function(f,i){
+        setTimeout(function(){ beep(f, i<3?0.08:0.28); }, i*70);
+      });
+    } else {
+      // 1連鎖：3音
+      beep(659,0.08);
+      setTimeout(function(){ beep(784,0.08); },65);
+      setTimeout(function(){ beep(988,0.22); },130);
+    }
+  }
+  function zannenSound(){
+    if(AC&&AC.state==='suspended') AC.resume();
+    // 下降する「残念」サウンド（明るい→暗く）
+    beep(659,0.14); // E5
+    setTimeout(function(){ beep(587,0.14); },200); // D5
+    setTimeout(function(){ beep(523,0.14); },400); // C5
+    setTimeout(function(){ beep(440,0.14); },600); // A4
+    setTimeout(function(){ beep(349,0.55); },820); // F4（低く長く）
+  }
+  function newRecordSound(){
+    beep(523,0.08); setTimeout(function(){beep(659,0.08);},80);
+    setTimeout(function(){beep(784,0.08);},160); setTimeout(function(){beep(1047,0.22);},240);
+  }
+  function firstTimeSound(){
+    beep(523,0.07); setTimeout(function(){beep(659,0.07);},70);
+    setTimeout(function(){beep(784,0.07);},140); setTimeout(function(){beep(1047,0.07);},210);
+    setTimeout(function(){beep(784,0.07);},280); setTimeout(function(){beep(1047,0.07);},350);
+    setTimeout(function(){beep(1319,0.28);},430);
+  }
+
+  function gameOver(){
+    G.running=false; clearWatchdog(); if(G.rafId) cancelAnimationFrame(G.rafId);
+    console.log('[gameOver] called, score='+G.score);
+
+    // スコア計算
+    var prev=loadBest(G.stage,G.mode);
+    var isFirst=(prev===null);
+    var isNew=(prev===null||G.score>prev);
+    if(isNew) saveBest(G.stage,G.mode,G.score);
+    var bestVal=isNew?G.score:(prev||G.score);
+
+    // 「残念」演出：フィールドにオーバーレイ＋音
+    zannenSound();
+    var zanEl=document.createElement('div');
+    zanEl.className='zannenOverlay';
+    zanEl.innerHTML='<div class="zannenText">ざんねん…</div>';
+    els.fieldWrap.appendChild(zanEl);
+
+    // 約2秒後にゲームオーバー画面へ
+    setTimeout(function(){
+      if(zanEl.parentNode) zanEl.parentNode.removeChild(zanEl);
+
+      if(els.finalScore) els.finalScore.textContent=G.score+'てん';
+      if(els.finalBest)  els.finalBest.textContent=bestVal+'てん';
+      if(els.finalCount) els.finalCount.textContent=G.successCount+'かい';
+      if(els.finalCombo) els.finalCombo.textContent=G.maxCombo+'れんぞく';
+
+      var si=document.getElementById('overStageInfo');
+      if(si) si.textContent='ステージ'+G.stage+' ・ '+G.target+'つくりす ・ '+(G.blockMode?'ブロック':'すうじ');
+
+      var ftb=document.getElementById('firstTimeBanner');
+      if(ftb) ftb.hidden=true;
+      if(els.newBestBanner){ els.newBestBanner.hidden=true; els.newBestBanner.classList.remove('pulse'); }
+
+      var sbNormal=document.getElementById('sbNormal');
+      var sbChain=document.getElementById('sbChain');
+      var sbCombo=document.getElementById('sbCombo');
+      if(sbNormal) sbNormal.textContent=G.normalScore+'てん';
+      if(sbChain)  sbChain.textContent=G.chainScoreTotal+'てん';
+      if(sbCombo)  sbCombo.textContent=G.comboScoreTotal+'てん';
+      var ccCard=document.getElementById('chainCountsCard');
+      var ccList=document.getElementById('chainCountsList');
+      if(ccList) ccList.innerHTML='';
+      var hasChain=false;
+      for(var cn=1;cn<=10;cn++){
+        if(G.chainCounts[cn]){
+          hasChain=true;
+          var item=document.createElement('span');
+          item.className='chainCountItem'+(cn>=4?' huge':cn>=3?' big':'');
+          item.textContent=cn+'れんさ：'+G.chainCounts[cn]+'かい';
+          if(ccList) ccList.appendChild(item);
+        }
+      }
+      if(ccCard) ccCard.style.display=hasChain?'block':'none';
+
+      if(isFirst){
+        if(ftb) ftb.hidden=false;
+        setTimeout(function(){ launchConfetti(130); firstTimeSound(); },300);
+      } else if(isNew){
+        if(els.newBestBanner){ els.newBestBanner.hidden=false; els.newBestBanner.classList.add('pulse'); }
+        setTimeout(function(){ launchConfetti(70); newRecordSound(); },300);
+      }
+
+      refreshBests();
+      showScreen('over');
+    }, 1900);
+  }
+
+  // ===== 画面切替 =====
+  function showScreen(n){
+    els.startScreen.hidden=(n!=='start');
+    els.gameScreen.hidden=(n!=='game');
+    els.overScreen.hidden=(n!=='over');
+    document.getElementById('rulesScreen').hidden=(n!=='rules');
+    document.getElementById('vizRulesScreen').hidden=(n!=='vizRules');
+  }
+
+  // ===== ナビゲーション =====
+  document.getElementById('rulesBtn').addEventListener('click',function(){ showScreen('rules'); });
+  document.getElementById('vizRulesBtn').addEventListener('click',function(){ showScreen('vizRules'); });
+  document.getElementById('rulesBackBtn').addEventListener('click',function(){ showScreen('start'); });
+  document.getElementById('vizBackBtn').addEventListener('click',function(){ showScreen('start'); });
+  document.querySelectorAll('.allCard').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      ensureAC();
+      var s=parseInt(btn.getAttribute('data-stage'),10);
+      var m=btn.getAttribute('data-mode');
+      showScreen('game'); initGame(s,m);
+    });
+  });
+  els.leftBtn.addEventListener('click',function(){ moveF(-1); });
+  els.rightBtn.addEventListener('click',function(){ moveF(1); });
+  els.rotLBtn.addEventListener('click',function(){ tryTransform('ccw'); });
+  els.rotRBtn.addEventListener('click',function(){ tryTransform('cw'); });
+  els.dropBtn.addEventListener('click',hardDrop);
+  els.retryBtn.addEventListener('click',function(){ showScreen('game'); initGame(G.stage,G.mode); });
+  els.changeLevelBtn.addEventListener('click',function(){ showScreen('start'); });
+  // ===== キーボードナビゲーション（ゲーム外） =====
+  document.addEventListener('keydown',function(e){
+    // Enterキー: ゲームオーバー画面→もう一度プレイ
+    if(e.key==='Enter'){
+      if(!els.overScreen.hidden){ e.preventDefault(); showScreen('game'); initGame(G.stage,G.mode); }
+      else if(!els.startScreen.hidden){ /* スタート画面ではEnterは何もしない */ }
+    }
+    // Escapeキー: どこからでもホームへ戻る（ゲーム中を除く）
+    if(e.key==='Escape'){
+      if(!G.running){ showScreen('start'); }
+      else {
+        // ゲーム中はEscapeで一時停止的にホームへ
+        G.running=false;
+        if(G.rafId) cancelAnimationFrame(G.rafId);
+        showScreen('start');
+      }
+    }
+  });
+
+  // ===== ゲーム中キー操作 =====
+  document.addEventListener('keydown',function(e){
+    if(!G.running) return;
+    // ← → = 左右移動
+    if(e.key==='ArrowLeft'){  e.preventDefault(); moveF(-1); }
+    if(e.key==='ArrowRight'){ e.preventDefault(); moveF(1);  }
+    // ↓ / スペース = 即落下
+    if(e.key==='ArrowDown'){ e.preventDefault(); hardDrop(); }
+    if(e.key===' '){ e.preventDefault(); hardDrop(); }
+    // C = みぎまわり、D = ひだりまわり、F = はんてん
+    if(e.key==='c'||e.key==='C') tryTransform('cw');
+    if(e.key==='d'||e.key==='D') tryTransform('ccw');
+    if(e.key==='f'||e.key==='F') tryTransform('flip');
+  });
+
+  // ===== 起動 =====
+  refreshBests();
+
+})();
+</script>
+</body>
+</html>
