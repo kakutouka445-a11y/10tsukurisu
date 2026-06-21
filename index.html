@@ -12,14 +12,18 @@
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ margin:0; padding:0; height:100%; overflow:hidden; }
   body{
-    height:100vh;
+    height:100vh; height:100dvh;
     background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 65%);
     font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
     color:var(--ink); display:flex; align-items:center; justify-content:center;
     user-select:none; -webkit-user-select:none; overscroll-behavior:none;
   }
-  #app{ width:100%; max-width:440px; height:100vh; display:flex; flex-direction:column; }
-  .screen{ display:flex; flex-direction:column; align-items:center; flex:1; }
+  #app{
+    width:100%; max-width:440px;
+    height:100vh; height:100dvh;
+    display:flex; flex-direction:column; margin:0 auto; overflow:hidden;
+  }
+  .screen{ display:flex; flex-direction:column; align-items:center; flex:1; min-height:0; }
   .screen[hidden]{ display:none; }
 
   /* ===== スタート画面 ===== */
@@ -171,7 +175,7 @@
   }
 
   /* ===== ゲーム画面 ===== */
-  #gameScreen{ justify-content:flex-start; padding:6px 12px 8px; gap:5px; }
+  #gameScreen{ justify-content:flex-start; padding:6px 12px 8px; gap:5px; overflow:hidden; min-height:0; }
   /* HUD オーバーレイ（半透明） */
   .hud{
     position:absolute; top:4px; left:4px; right:4px; z-index:8;
@@ -186,7 +190,7 @@
   .hudCol{ display:flex; flex-direction:column; align-items:center; gap:1px; }
 
   /* コントロール 1行（回転ボタン半幅） */
-  .controls{ display:grid; grid-template-columns:0.5fr 1fr 1fr 1fr 0.5fr; gap:6px; width:100%; flex-shrink:0; }
+  .controls{ display:grid; grid-template-columns:0.5fr 1fr 1fr 1fr 0.5fr; gap:6px; width:100%; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom,4px); }
   .ctrlBtn.rot-btn{ font-size:1.1rem; }
 
   /* すうじモード: 3列1行 */
@@ -265,7 +269,7 @@
   }
 
   /* ===== フィールド ===== */
-  .fieldWrap{ position:relative; flex:1; overflow:hidden; width:100%; }
+  .fieldWrap{ position:relative; flex:1; min-height:0; overflow:hidden; width:100%; }
   .field{
     position:relative; border-radius:8px;
     margin:0 auto; display:block;
@@ -1073,7 +1077,9 @@
   function computeCell(){
     var ctrlH=56, guideH=G.blockMode?20:0;
     var reserved=ctrlH+guideH+14+15;
-    var aH=window.innerHeight-reserved;
+    // モバイルのアドレスバーやキーボードを考慮した実際の高さ
+    var vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    var aH=vh-reserved;
     var aW=Math.min(window.innerWidth-24,440)-12;
     var cH=Math.floor(aH/ROWS);
     var cW=Math.floor(aW/COLS);
