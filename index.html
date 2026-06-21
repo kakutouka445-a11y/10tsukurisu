@@ -205,11 +205,13 @@
     background:rgba(255,255,255,0.7); border-radius:9px; padding:2px 10px;
     min-width:32px; text-align:center;
   }
-  .nextBadge{
-    font-family:'Mochiy Pop One',cursive; font-size:1.6rem; color:#fff; line-height:1;
-    border:3px solid #fff; border-radius:12px; padding:4px 14px;
-    box-shadow:0 2px 0 rgba(0,0,0,0.1); min-width:44px; text-align:center;
+  .nextQueue{ display:flex; align-items:center; gap:3px; }
+  .nqItem{
+    font-family:'Mochiy Pop One',cursive; color:#fff; line-height:1;
+    border-radius:9px; text-align:center; font-size:1.3rem; padding:3px 8px; min-width:28px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.15);
   }
+  .nqItem.nqSm{ font-size:0.85rem; padding:2px 5px; min-width:20px; opacity:0.82; border-radius:7px; }
   .scoreBadge{
     font-family:'Mochiy Pop One',cursive; font-size:1rem; color:var(--ink);
     background:rgba(255,255,255,0.7); border-radius:9px; padding:2px 9px;
@@ -902,7 +904,11 @@
         </div>
         <div class="hudCol">
           <span class="hudLabel">つぎ</span>
-          <span id="nextBadge" class="nextBadge">?</span>
+          <div class="nextQueue">
+            <span id="nq0" class="nqItem">?</span>
+            <span id="nq1" class="nqItem nqSm">?</span>
+            <span id="nq2" class="nqItem nqSm">?</span>
+          </div>
         </div>
       </header>
       <div id="comboBanner"></div>
@@ -1012,7 +1018,7 @@
   var els={
     startScreen:E('startScreen'), gameScreen:E('gameScreen'), overScreen:E('overScreen'),
     field:E('field'), fieldWrap:E('fieldWrap'), controls:E('controls'),
-    targetBadge:E('targetBadge'), nextBadge:E('nextBadge'),
+    targetBadge:E('targetBadge'),
     scoreBadge:E('scoreBadge'), comboBanner:E('comboBanner'),
     leftBtn:E('leftBtn'), rightBtn:E('rightBtn'),
     rotLBtn:E('rotLBtn'), rotRBtn:E('rotRBtn'), dropBtn:E('dropBtn'),
@@ -1031,9 +1037,10 @@
     score:0, successCount:0,
     comboCount:0, maxCombo:0, lastClearTime:null,
     landingLocked:false, hardDropUsed:false,
-    chainCounts:{}, // 連鎖かいすう記録 {1:5, 2:3, 3:1 ...}
+    chainCounts:{},
     watchdog:null,
-    normalScore:0, chainScoreTotal:0, comboScoreTotal:0 // とくてん内訳
+    normalScore:0, chainScoreTotal:0, comboScoreTotal:0,
+    nextQueue:[] // 次の3個
   };
 
   // ===== ハイスコア =====
@@ -1139,12 +1146,20 @@
     if(comps.length&&Math.random()<0.30) return comps[Math.floor(Math.random()*comps.length)];
     return r.mn+Math.floor(Math.random()*(r.mx-r.mn+1));
   }
-  function updateNextBadge(){ els.nextBadge.textContent=G.nextValue; els.nextBadge.style.background=COLORS[G.nextValue]; }
+  function updateNextQueue(){
+    G.nextQueue.forEach(function(val,i){
+      var el=document.getElementById('nq'+i);
+      if(el){ el.textContent=val; el.style.background=COLORS[val]||'#aaa'; }
+    });
+  }
 
   // ===== スポーン =====
   function spawnFalling(){
     if(G.landingLocked) return;
-    var value=G.nextValue, shape=getShape(value), sw=getShapeW(value);
+    var value=G.nextQueue.shift();     // キューの先頭を取り出す
+    G.nextQueue.push(pickNext());       // 末尾に1個補充
+    updateNextQueue();
+    var shape=getShape(value), sw=getShapeW(value);
     var anchorCol=Math.floor((COLS-sw)/2);
     if(!isValid(0,anchorCol,shape)){ gameOver(); return; }
     var color=COLORS[value], cellEls=[];
@@ -1154,7 +1169,6 @@
       els.field.appendChild(el); cellEls.push(el);
     });
     G.falling={value:value,shape:shape,anchorRowF:0,anchorCol:anchorCol,color:color,els:cellEls};
-    G.nextValue=pickNext(); updateNextBadge();
   }
 
   // ===== スピード =====
@@ -1494,11 +1508,10 @@
     });
 
     if(toRemove.length>0){
-      // 削除前に再確認（Bオプション: 最初の1ピースのみとマッチ）
       toRemove=toRemove.filter(function(apid){
         var ap=G.pieces[apid];
         return ap && !ap._rm && !piece._rm && (ap.value+piece.value===G.target);
-      }).slice(0,1); // ← 最大1ピースのみ
+      }); // ← 全てのマッチを消す（複数OK）
     }
 
     if(toRemove.length>0){
@@ -1506,19 +1519,19 @@
       piece._rm=true;
       toRemove.forEach(function(apid){ if(G.pieces[apid]) G.pieces[apid]._rm=true; });
 
-      // コンボ・スコア
+      // コンボ・スコア（マッチした組数分加算）
       var now=Date.now();
-      var cWindow=G.hardDropUsed?4000:COMBO_WINDOW; // ハードドロップ時は4秒
+      var cWindow=G.hardDropUsed?4000:COMBO_WINDOW;
       G.hardDropUsed=false;
       if(G.lastClearTime&&(now-G.lastClearTime)<=cWindow) G.comboCount++;
       else G.comboCount=1;
       G.lastClearTime=now;
       if(G.comboCount>G.maxCombo) G.maxCombo=G.comboCount;
       var baseGained=10*G.speedLevel;
-      var gained=baseGained*G.comboCount; // N連続でN倍
-      G.normalScore+=baseGained;
-      G.comboScoreTotal+=gained-baseGained; // コンボボーナス分
-      G.score+=gained; G.successCount++;
+      var gained=baseGained*G.comboCount*toRemove.length; // 複数マッチは組数倍
+      G.normalScore+=baseGained*toRemove.length;
+      G.comboScoreTotal+=gained-baseGained*toRemove.length;
+      G.score+=gained; G.successCount+=toRemove.length;
       els.scoreBadge.textContent=G.score;
 
       var mc=piece.cells[Math.floor(piece.cells.length/2)];
@@ -1610,7 +1623,8 @@
       kg&&kg.classList.add('no-rot');
     }
 
-    G.nextValue=pickNext(); updateNextBadge();
+    G.nextQueue=[pickNext(),pickNext(),pickNext()];
+    updateNextQueue();
     spawnFalling();
     G.running=true; G.lastTime=performance.now();
     if(G.rafId) cancelAnimationFrame(G.rafId);
